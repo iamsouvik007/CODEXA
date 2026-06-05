@@ -6,7 +6,6 @@ import Hero from './components/Hero';
 import ProductPreview from './components/ProductPreview';
 import LearningMethod from './components/LearningMethod';
 import Roadmap from './components/Roadmap';
-import PremiumPrograms from './components/PremiumPrograms';
 import FAQ from './components/FAQ';
 import FinalCTA from './components/FinalCTA';
 import Footer from './components/Footer';
@@ -37,7 +36,6 @@ export default function App() {
           <ProductPreview />
           <LearningMethod />
           <Roadmap />
-          <PremiumPrograms />
           <FAQ />
           <FinalCTA />
         </main>
@@ -48,7 +46,8 @@ export default function App() {
 
         {/* Modals */}
         <ComingSoonModal
-          isOpen={activeModal === 'playground'}
+          isOpen={['playground', 'interview', 'premium'].includes(activeModal)}
+          modalType={activeModal}
           onClose={handleCloseModal}
         />
         <AboutModal

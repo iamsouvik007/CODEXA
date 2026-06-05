@@ -2,7 +2,26 @@ import { motion } from 'framer-motion';
 import { ArrowRight, BookOpen } from 'lucide-react';
 import { useScrollReveal, staggerContainer, fadeUp, brandReveal, useWordCycler } from '../lib/animations';
 
-const cycleWords = ['Understand.', 'Visualize.', 'Practice.', 'Master.'];
+const cycleWords = ['Understand.', 'Visualize.', 'Practice.', 'Ask.', 'Master.'];
+
+// Floating code fragments for the background reveal
+const codeFragments = [
+  { text: 'const learning = true;', top: '15%', left: '10%' },
+  { text: 'function masterConcept() {}', top: '25%', left: '75%' },
+  { text: 'if (practice) {\n  improve();\n}', top: '65%', left: '15%' },
+  { text: 'export default Codexa;', top: '80%', left: '70%' },
+  { text: 'async function ()', top: '45%', left: '85%' },
+  { text: 'Promise.resolve()', top: '35%', left: '5%' },
+  { text: '=>', top: '55%', left: '50%' },
+  { text: '[]', top: '75%', left: '40%' },
+  { text: '{}', top: '20%', left: '45%' },
+  { text: '===', top: '85%', left: '25%' },
+  { text: '/javascript', top: '10%', left: '60%' },
+  { text: '/system-design', top: '50%', left: '20%' },
+  { text: 'import React from "react";', top: '90%', left: '55%' },
+  { text: 'Node.js', top: '30%', left: '35%' },
+  { text: 'GenAI', top: '70%', left: '80%' },
+];
 
 export default function Hero() {
   const { ref, controls } = useScrollReveal(0.1);
@@ -15,24 +34,44 @@ export default function Hero() {
       id="main-content"
     >
       {/* Background grid */}
-      <div className="pointer-events-none absolute inset-0 bg-grid" aria-hidden="true" />
+      <div className="pointer-events-none absolute inset-0 bg-grid z-0" aria-hidden="true" />
+
+      {/* Hidden Code Layer with Spotlight Reveal */}
+      <div 
+        className="pointer-events-none absolute inset-0 z-0 opacity-80 mix-blend-screen"
+        style={{
+          maskImage: 'radial-gradient(350px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), black 0%, transparent 100%)',
+          WebkitMaskImage: 'radial-gradient(350px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), black 0%, transparent 100%)',
+        }}
+        aria-hidden="true"
+      >
+        {codeFragments.map((fragment, i) => (
+          <div 
+            key={i} 
+            className="absolute font-mono text-sm font-medium text-accent/80 whitespace-pre"
+            style={{ top: fragment.top, left: fragment.left }}
+          >
+            {fragment.text}
+          </div>
+        ))}
+      </div>
 
       {/* Background radial glows */}
-      <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+      <div className="pointer-events-none absolute inset-0 z-0" aria-hidden="true">
         <div className="absolute top-1/4 left-1/2 h-[600px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/[0.03] blur-[120px]" />
         <div className="absolute right-1/4 bottom-1/3 h-[300px] w-[400px] rounded-full bg-accent/[0.02] blur-[80px]" />
       </div>
 
-      {/* Large CODEXA brand text — background layer */}
+      {/* Large CODEXA watermark — background layer */}
       <motion.div
         initial="hidden"
         animate={controls}
         variants={brandReveal}
-        className="pointer-events-none absolute inset-0 flex items-center justify-center select-none"
+        className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center select-none"
         aria-hidden="true"
       >
         <span
-          className="font-heading text-[clamp(100px,18vw,220px)] font-bold leading-none tracking-[-0.04em] whitespace-nowrap"
+          className="font-heading text-[clamp(100px,18vw,220px)] font-bold leading-none tracking-[-0.04em] whitespace-nowrap opacity-40"
           style={{
             background: 'linear-gradient(135deg, rgba(249,115,22,0.07) 0%, rgba(253,186,116,0.04) 50%, rgba(249,115,22,0.02) 100%)',
             WebkitBackgroundClip: 'text',
@@ -50,28 +89,24 @@ export default function Hero() {
         variants={staggerContainer}
         className="relative z-10 mx-auto max-w-[1200px] px-5 py-24 text-center sm:px-8 sm:py-32"
       >
-        {/* Eyebrow badge */}
-        <motion.div variants={fadeUp} className="mb-8 flex justify-center">
-          <span className="inline-flex items-center gap-2 rounded-pill border border-border bg-bg-card/80 px-4 py-1.5 text-sm font-medium text-text-secondary backdrop-blur-sm">
-            <span className="relative flex h-2 w-2">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-accent" />
-            </span>
-            Interactive Learning Platform
-          </span>
+        {/* Foreground CODEXA Brand */}
+        <motion.div variants={fadeUp} className="mb-4 flex justify-center">
+           <h1 className="font-heading text-6xl font-bold tracking-tight text-text sm:text-7xl md:text-8xl lg:text-9xl">
+             CODEXA
+           </h1>
         </motion.div>
 
         {/* Headline */}
-        <motion.h1
+        <motion.h2
           variants={fadeUp}
-          className="text-balance font-heading mx-auto max-w-5xl text-4xl font-semibold leading-[1.06] tracking-[-0.03em] text-text sm:text-5xl md:text-6xl lg:text-7xl"
+          className="text-balance font-heading mx-auto max-w-5xl text-3xl font-semibold leading-[1.06] tracking-[-0.03em] text-text sm:text-4xl md:text-5xl lg:text-6xl"
         >
           Stop reading code.{' '}
           <br className="hidden sm:inline" />
           <span className="bg-gradient-to-r from-accent to-accent-soft bg-clip-text text-transparent">
             Start experiencing it.
           </span>
-        </motion.h1>
+        </motion.h2>
 
         {/* Typing animation */}
         <motion.div
@@ -111,7 +146,7 @@ export default function Hero() {
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
           </a>
           <a
-            href="#demo"
+            href="#roadmap"
             className="group inline-flex items-center gap-2 rounded-pill border border-border bg-bg-card/60 px-8 py-3.5 text-base font-medium text-text-secondary backdrop-blur-sm transition-all hover:border-border-strong hover:text-text"
           >
             <BookOpen className="h-4 w-4" aria-hidden="true" />

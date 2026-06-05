@@ -38,6 +38,11 @@ export default function CursorSpotlight() {
       if (spotRef.current) {
         spotRef.current.style.transform = `translate(${currentRef.current.x - 300}px, ${currentRef.current.y - 300}px)`;
       }
+      
+      // Export coordinates for mask reveals in other components
+      document.documentElement.style.setProperty('--mouse-x', `${currentRef.current.x}px`);
+      document.documentElement.style.setProperty('--mouse-y', `${currentRef.current.y}px`);
+      
       rafRef.current = requestAnimationFrame(animate);
     };
 

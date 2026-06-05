@@ -26,6 +26,13 @@ const roadmapItems = [
     lessons: 75,
   },
   {
+    title: 'Backend Engineering',
+    status: 'planned',
+    desc: 'Node.js, Express, Databases, Authentication, APIs, Architecture.',
+    topics: 20,
+    lessons: 100,
+  },
+  {
     title: 'DevOps',
     status: 'planned',
     desc: 'CI/CD, Docker, Kubernetes, monitoring, cloud infrastructure.',

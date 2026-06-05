@@ -2,9 +2,22 @@ import { useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Construction } from 'lucide-react';
 
-export default function ComingSoonModal({ isOpen, onClose }) {
+export default function ComingSoonModal({ isOpen, modalType, onClose }) {
   const closeRef = useRef(null);
   const previousFocus = useRef(null);
+
+  let content = {
+    title: "Coming Soon",
+    description: "This feature is currently under development."
+  };
+
+  if (modalType === 'playground') {
+    content.description = "Interactive playground is currently under development. The actual playground exists inside lessons.";
+  } else if (modalType === 'interview') {
+    content.description = "This interview feature is currently under development and will be released soon.";
+  } else if (modalType === 'premium') {
+    content.description = "This partner program is currently being integrated and will be available soon.";
+  }
 
   // Focus trap and keyboard handling
   useEffect(() => {
@@ -79,11 +92,10 @@ export default function ComingSoonModal({ isOpen, onClose }) {
                   <Construction className="h-8 w-8 text-accent" aria-hidden="true" />
                 </div>
                 <h3 className="font-heading text-xl font-semibold tracking-tight text-text">
-                  Interactive Playground
+                  {content.title}
                 </h3>
                 <p className="mt-3 text-sm leading-relaxed text-text-secondary">
-                  The Interactive Playground is currently under development and will be released soon.
-                  You&apos;ll be able to experiment with code concepts in real-time — no setup required.
+                  {content.description}
                 </p>
                 <div className="mt-6 inline-flex items-center gap-2 rounded-pill bg-accent-bg px-4 py-2 text-xs font-medium text-accent">
                   <span className="relative flex h-1.5 w-1.5">
