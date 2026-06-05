@@ -6,6 +6,7 @@ import Hero from './components/Hero';
 import ProductPreview from './components/ProductPreview';
 import LearningMethod from './components/LearningMethod';
 import Roadmap from './components/Roadmap';
+import TrustedProviders from './components/TrustedProviders';
 import FAQ from './components/FAQ';
 import FinalCTA from './components/FinalCTA';
 import Footer from './components/Footer';
@@ -36,6 +37,7 @@ export default function App() {
           <ProductPreview />
           <LearningMethod />
           <Roadmap />
+          <TrustedProviders />
           <FAQ />
           <FinalCTA />
         </main>

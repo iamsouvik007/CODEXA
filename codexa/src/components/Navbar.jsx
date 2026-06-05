@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Sparkles, ChevronDown, Video, FileText, MessageSquare, Zap, Star } from 'lucide-react';
+import { Menu, X, Sparkles, ChevronDown, Video, FileText, MessageSquare } from 'lucide-react';
 import { useAITutor } from '../lib/AITutorContext';
 
 export default function Navbar({ onOpenModal }) {
@@ -42,6 +42,7 @@ export default function Navbar({ onOpenModal }) {
       }
       setMobileOpen(false);
     } else {
+      // Allow default navigation for /learn or absolute paths
       setMobileOpen(false);
     }
   };
@@ -59,22 +60,20 @@ export default function Navbar({ onOpenModal }) {
 
   const navLinks = [
     { label: 'Home', href: '#main-content' },
-    { label: 'Learn', href: '#learn' },
+    { label: 'Learn', href: '/learn' },
     { label: 'Playground', href: '#playground', modal: 'playground' },
     { label: 'AI Tutor', href: '#ai-tutor', action: 'ai-tutor' },
-    { label: 'About', href: '#about', modal: 'about' },
+  ];
+
+  const secondaryNavLinks = [
+    { label: 'Premium', href: '#trusted-providers' },
+    { label: 'About', href: '#vision' },
   ];
 
   const interviewItems = [
     { title: 'Live Mock Interview', icon: Video, desc: 'Practice with an AI interviewer', modal: 'interview' },
     { title: 'Resume Templates', icon: FileText, desc: 'Developer-focused templates', modal: 'interview' },
     { title: 'Most Asked Questions', icon: MessageSquare, desc: 'Curated by top engineers', modal: 'interview' },
-  ];
-
-  const premiumItems = [
-    { title: 'Strike', icon: Zap, desc: 'Project-based learning program', href: 'https://strikes.in/', featured: true },
-    { title: 'Advanced Patterns', icon: Star, desc: 'Architecture & performance', modal: 'premium' },
-    { title: 'System Design Lab', icon: Star, desc: 'Interactive architecture diagrams', modal: 'premium' },
   ];
 
   return (
@@ -99,15 +98,16 @@ export default function Navbar({ onOpenModal }) {
           </a>
 
           {/* Desktop nav links */}
-          <div className="hidden items-center gap-1 lg:flex">
-            {navLinks.slice(0, 4).map((link) => (
+          <div className="hidden items-center gap-2 lg:flex">
+            {navLinks.map((link) => (
               <a
                 key={link.label}
                 href={link.href}
                 onClick={(e) => handleNavClick(e, link)}
-                className="group relative rounded-lg px-3 py-2 text-sm text-text-secondary transition-colors hover:text-text"
+                className="group relative flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium text-text-secondary transition-all duration-300 hover:-translate-y-0.5 hover:text-text"
               >
                 {link.label}
+                <span className="absolute bottom-1 left-3 right-3 h-px origin-center scale-x-0 bg-accent transition-transform duration-300 ease-out group-hover:scale-x-100" aria-hidden="true" />
               </a>
             ))}
 
@@ -117,9 +117,10 @@ export default function Navbar({ onOpenModal }) {
               onMouseEnter={() => handleMouseEnter('interview')}
               onMouseLeave={handleMouseLeave}
             >
-              <button className="group relative flex items-center gap-1 rounded-lg px-3 py-2 text-sm text-text-secondary transition-colors hover:text-text">
+              <button className="group relative flex items-center justify-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-text-secondary transition-all duration-300 hover:-translate-y-0.5 hover:text-text">
                 Interview
-                <ChevronDown className="h-3 w-3 text-text-muted transition-transform group-hover:text-text" />
+                <ChevronDown className="h-3 w-3 text-text-muted transition-transform duration-300 group-hover:text-text" />
+                <span className="absolute bottom-1 left-3 right-3 h-px origin-center scale-x-0 bg-accent transition-transform duration-300 ease-out group-hover:scale-x-100" aria-hidden="true" />
               </button>
               <AnimatePresence>
                 {activeDropdown === 'interview' && (
@@ -155,84 +156,32 @@ export default function Navbar({ onOpenModal }) {
               </AnimatePresence>
             </div>
 
-            {/* Premium Dropdown */}
-            <div
-              className="relative"
-              onMouseEnter={() => handleMouseEnter('premium')}
-              onMouseLeave={handleMouseLeave}
-            >
-              <button className="group relative flex items-center gap-1 rounded-lg px-3 py-2 text-sm text-text-secondary transition-colors hover:text-text">
-                Premium
-                <ChevronDown className="h-3 w-3 text-text-muted transition-transform group-hover:text-text" />
-              </button>
-              <AnimatePresence>
-                {activeDropdown === 'premium' && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    transition={{ duration: 0.15, ease: "easeOut" }}
-                    className="absolute top-full left-1/2 mt-2 w-80 -translate-x-1/2 overflow-hidden rounded-xl border border-border bg-bg-card shadow-elevated"
-                  >
-                    <div className="border-b border-border bg-bg-soft px-4 py-3">
-                      <h4 className="text-sm font-medium text-text">Trusted Course Providers</h4>
-                      <p className="mt-0.5 text-xs text-text-muted">Hand-picked programs recommended by Codexa.</p>
-                    </div>
-                    <div className="p-2">
-                      {premiumItems.map((item, i) => (
-                        <a
-                          key={i}
-                          href={item.href || '#'}
-                          onClick={(e) => item.href ? null : handleNavClick(e, { modal: item.modal })}
-                          target={item.href ? "_blank" : undefined}
-                          rel={item.href ? "noopener noreferrer" : undefined}
-                          className="flex w-full items-start gap-3 rounded-lg p-3 text-left transition-colors hover:bg-bg-elevated"
-                        >
-                          <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md ${item.featured ? 'bg-[#ff5f57]/10' : 'bg-accent/10'}`}>
-                            <item.icon className={`h-4 w-4 ${item.featured ? 'text-[#ff5f57]' : 'text-accent'}`} />
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm font-medium text-text">{item.title}</span>
-                              {item.featured && (
-                                <span className="rounded-full bg-[#ff5f57]/10 px-2 py-0.5 text-[9px] font-medium text-[#ff5f57] uppercase tracking-wider">Featured</span>
-                              )}
-                              {!item.featured && (
-                                <span className="rounded-full bg-bg-input px-2 py-0.5 text-[9px] font-medium text-text-muted uppercase tracking-wider">Soon</span>
-                              )}
-                            </div>
-                            <span className="text-xs text-text-secondary">{item.desc}</span>
-                          </div>
-                        </a>
-                      ))}
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
-
-            <a
-              href="#about"
-              onClick={(e) => handleNavClick(e, navLinks.find(l => l.label === 'About'))}
-              className="group relative rounded-lg px-3 py-2 text-sm text-text-secondary transition-colors hover:text-text"
-            >
-              About
-            </a>
+            {secondaryNavLinks.map((link) => (
+              <a
+                key={link.label}
+                href={link.href}
+                onClick={(e) => handleNavClick(e, link)}
+                className="group relative flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium text-text-secondary transition-all duration-300 hover:-translate-y-0.5 hover:text-text"
+              >
+                {link.label}
+                <span className="absolute bottom-1 left-3 right-3 h-px origin-center scale-x-0 bg-accent transition-transform duration-300 ease-out group-hover:scale-x-100" aria-hidden="true" />
+              </a>
+            ))}
           </div>
 
           {/* Desktop CTA */}
-          <div className="hidden items-center gap-3 lg:flex">
+          <div className="hidden items-center gap-4 lg:flex">
             <a
               href="#roadmap"
               onClick={(e) => handleNavClick(e, {href: '#roadmap'})}
-              className="rounded-pill border border-border px-5 py-2 text-sm font-medium text-text-secondary transition-all hover:border-border-strong hover:text-text"
+              className="group relative rounded-pill border border-border px-5 py-2 text-sm font-medium text-text-secondary transition-all duration-300 hover:-translate-y-0.5 hover:border-border-strong hover:text-text"
             >
               Explore Curriculum
             </a>
             <a
-              href="#learn"
-              onClick={(e) => handleNavClick(e, {href: '#learn'})}
-              className="rounded-pill bg-accent px-5 py-2 text-sm font-medium text-white transition-all hover:bg-accent-deep"
+              href="/learn"
+              onClick={(e) => handleNavClick(e, {href: '/learn'})}
+              className="group relative rounded-pill bg-accent px-5 py-2 text-sm font-medium text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-accent-deep hover:shadow-glow"
             >
               Start Learning
             </a>
@@ -262,7 +211,7 @@ export default function Navbar({ onOpenModal }) {
           >
             <nav className="flex flex-col gap-8" aria-label="Mobile navigation">
               <div className="flex flex-col gap-4">
-                {navLinks.slice(0, 4).map((link, i) => (
+                {[...navLinks, ...secondaryNavLinks].map((link, i) => (
                   <motion.a
                     key={link.label}
                     href={link.href}
@@ -297,34 +246,12 @@ export default function Navbar({ onOpenModal }) {
                 ))}
               </motion.div>
 
-              <motion.div
+              <motion.a
+                href="/learn"
+                onClick={(e) => handleNavClick(e, {href: '/learn'})}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="flex flex-col gap-4"
-              >
-                <div className="text-sm font-semibold text-text uppercase tracking-wider">Premium</div>
-                {premiumItems.map((item, i) => (
-                   <a
-                   key={i}
-                   href={item.href || '#'}
-                   onClick={(e) => item.href ? null : handleNavClick(e, { modal: item.modal })}
-                   target={item.href ? "_blank" : undefined}
-                   rel={item.href ? "noopener noreferrer" : undefined}
-                   className="flex items-center gap-3 text-left transition-colors hover:text-text text-text-secondary"
-                 >
-                   <item.icon className={`h-4 w-4 ${item.featured ? 'text-[#ff5f57]' : 'text-accent'}`} />
-                   <span className="font-medium">{item.title}</span>
-                 </a>
-                ))}
-              </motion.div>
-
-              <motion.a
-                href="#learn"
-                onClick={(e) => handleNavClick(e, {href: '#learn'})}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
                 className="mt-4 flex items-center justify-center rounded-pill bg-accent px-8 py-4 text-lg font-medium text-white shadow-card"
               >
                 Start Learning

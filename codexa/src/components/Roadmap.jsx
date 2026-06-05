@@ -162,7 +162,7 @@ export default function Roadmap() {
         </motion.div>
 
         {/* Coming Next — merged from FutureVision */}
-        <motion.div variants={fadeUp} className="mt-16 sm:mt-20">
+        <motion.div id="vision" variants={fadeUp} className="mt-16 scroll-mt-24 sm:mt-20">
           <h3 className="font-heading mb-6 text-center text-xl font-semibold tracking-tight text-text sm:text-2xl">
             Coming next.
           </h3>

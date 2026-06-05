@@ -6,21 +6,48 @@ const cycleWords = ['Understand.', 'Visualize.', 'Practice.', 'Ask.', 'Master.']
 
 // Floating code fragments for the background reveal
 const codeFragments = [
-  { text: 'const learning = true;', top: '15%', left: '10%' },
-  { text: 'function masterConcept() {}', top: '25%', left: '75%' },
-  { text: 'if (practice) {\n  improve();\n}', top: '65%', left: '15%' },
-  { text: 'export default Codexa;', top: '80%', left: '70%' },
-  { text: 'async function ()', top: '45%', left: '85%' },
-  { text: 'Promise.resolve()', top: '35%', left: '5%' },
-  { text: '=>', top: '55%', left: '50%' },
-  { text: '[]', top: '75%', left: '40%' },
-  { text: '{}', top: '20%', left: '45%' },
-  { text: '===', top: '85%', left: '25%' },
-  { text: '/javascript', top: '10%', left: '60%' },
-  { text: '/system-design', top: '50%', left: '20%' },
-  { text: 'import React from "react";', top: '90%', left: '55%' },
-  { text: 'Node.js', top: '30%', left: '35%' },
-  { text: 'GenAI', top: '70%', left: '80%' },
+  // Snippets
+  { text: 'const learning = true;', top: '15%', left: '10%', fontSize: 'text-sm' },
+  { text: 'function masterConcept() {}', top: '25%', left: '75%', fontSize: 'text-xs' },
+  { text: 'if (practice) {\n  improve();\n}', top: '65%', left: '12%', fontSize: 'text-sm' },
+  { text: 'export default Codexa;', top: '80%', left: '70%', fontSize: 'text-sm' },
+  
+  // Symbols
+  { text: '{}', top: '20%', left: '45%', fontSize: 'text-3xl' },
+  { text: '[]', top: '75%', left: '40%', fontSize: 'text-2xl' },
+  { text: '()', top: '40%', left: '15%', fontSize: 'text-2xl' },
+  { text: '<>', top: '35%', left: '85%', fontSize: 'text-xl' },
+  { text: '=>', top: '55%', left: '50%', fontSize: 'text-lg' },
+  { text: '&&', top: '10%', left: '30%', fontSize: 'text-lg' },
+  { text: '||', top: '85%', left: '55%', fontSize: 'text-lg' },
+  { text: '===', top: '90%', left: '25%', fontSize: 'text-xl' },
+  { text: '!==', top: '60%', left: '88%', fontSize: 'text-xl' },
+  { text: 'async', top: '30%', left: '55%', fontSize: 'text-sm' },
+  { text: 'await', top: '45%', left: '25%', fontSize: 'text-sm' },
+  { text: 'import', top: '12%', left: '80%', fontSize: 'text-sm' },
+  { text: 'export', top: '88%', left: '80%', fontSize: 'text-sm' },
+
+  // Keywords
+  { text: 'Variables', top: '42%', left: '70%', fontSize: 'text-xs' },
+  { text: 'Functions', top: '18%', left: '60%', fontSize: 'text-xs' },
+  { text: 'Arrays', top: '50%', left: '35%', fontSize: 'text-xs' },
+  { text: 'Objects', top: '78%', left: '18%', fontSize: 'text-xs' },
+  { text: 'Closures', top: '28%', left: '40%', fontSize: 'text-xs' },
+  { text: 'Promises', top: '58%', left: '10%', fontSize: 'text-xs' },
+  { text: 'Async/Await', top: '70%', left: '60%', fontSize: 'text-xs' },
+  { text: 'React', top: '22%', left: '22%', fontSize: 'text-xs' },
+  { text: 'Backend', top: '52%', left: '80%', fontSize: 'text-xs' },
+  { text: 'System Design', top: '82%', left: '45%', fontSize: 'text-xs' },
+  { text: 'DevOps', top: '15%', left: '5%', fontSize: 'text-xs' },
+  { text: 'GenAI', top: '68%', left: '92%', fontSize: 'text-xs' },
+
+  // Folders
+  { text: '/javascript', top: '8%', left: '50%', fontSize: 'text-xs' },
+  { text: '/react', top: '35%', left: '5%', fontSize: 'text-xs' },
+  { text: '/backend', top: '62%', left: '28%', fontSize: 'text-xs' },
+  { text: '/system-design', top: '48%', left: '90%', fontSize: 'text-xs' },
+  { text: '/devops', top: '92%', left: '10%', fontSize: 'text-xs' },
+  { text: '/genai', top: '75%', left: '85%', fontSize: 'text-xs' },
 ];
 
 export default function Hero() {
@@ -33,47 +60,47 @@ export default function Hero() {
       className="relative flex min-h-screen items-center justify-center overflow-hidden bg-bg pt-16"
       id="main-content"
     >
-      {/* Background grid */}
-      <div className="pointer-events-none absolute inset-0 bg-grid z-0" aria-hidden="true" />
+      {/* 1. Base Layer: Background grid */}
+      <div className="pointer-events-none absolute inset-0 bg-grid z-0 opacity-60" aria-hidden="true" />
 
-      {/* Hidden Code Layer with Spotlight Reveal */}
+      {/* 2 & 3. Hidden Developer Layer + Mask Reveal */}
       <div 
-        className="pointer-events-none absolute inset-0 z-0 opacity-80 mix-blend-screen"
+        className="pointer-events-none absolute inset-0 z-0 opacity-70 mix-blend-screen transition-opacity duration-500"
         style={{
-          maskImage: 'radial-gradient(350px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), black 0%, transparent 100%)',
-          WebkitMaskImage: 'radial-gradient(350px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), black 0%, transparent 100%)',
+          maskImage: 'radial-gradient(400px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 40%, transparent 100%)',
+          WebkitMaskImage: 'radial-gradient(400px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 40%, transparent 100%)',
         }}
         aria-hidden="true"
       >
         {codeFragments.map((fragment, i) => (
           <div 
             key={i} 
-            className="absolute font-mono text-sm font-medium text-accent/80 whitespace-pre"
+            className={`absolute font-mono font-medium text-accent whitespace-pre tracking-wide`}
             style={{ top: fragment.top, left: fragment.left }}
           >
-            {fragment.text}
+            <span className={fragment.fontSize}>{fragment.text}</span>
           </div>
         ))}
       </div>
 
-      {/* Background radial glows */}
+      {/* Background radial glows for general ambiance */}
       <div className="pointer-events-none absolute inset-0 z-0" aria-hidden="true">
-        <div className="absolute top-1/4 left-1/2 h-[600px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/[0.03] blur-[120px]" />
-        <div className="absolute right-1/4 bottom-1/3 h-[300px] w-[400px] rounded-full bg-accent/[0.02] blur-[80px]" />
+        <div className="absolute top-1/4 left-1/2 h-[600px] w-[800px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/[0.04] blur-[120px]" />
+        <div className="absolute right-1/4 bottom-1/3 h-[300px] w-[400px] rounded-full bg-accent/[0.03] blur-[80px]" />
       </div>
 
-      {/* Large CODEXA watermark — background layer */}
+      {/* 4. Large CODEXA watermark — background layer */}
       <motion.div
         initial="hidden"
         animate={controls}
         variants={brandReveal}
-        className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center select-none"
+        className="pointer-events-none absolute inset-0 z-[1] flex items-center justify-center select-none"
         aria-hidden="true"
       >
         <span
-          className="font-heading text-[clamp(100px,18vw,220px)] font-bold leading-none tracking-[-0.04em] whitespace-nowrap opacity-40"
+          className="font-heading text-[clamp(120px,25vw,350px)] font-bold leading-none tracking-[-0.04em] whitespace-nowrap opacity-10"
           style={{
-            background: 'linear-gradient(135deg, rgba(249,115,22,0.07) 0%, rgba(253,186,116,0.04) 50%, rgba(249,115,22,0.02) 100%)',
+            background: 'linear-gradient(135deg, rgba(249,115,22,0.15) 0%, rgba(253,186,116,0.05) 50%, rgba(249,115,22,0.02) 100%)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
@@ -83,6 +110,7 @@ export default function Hero() {
         </span>
       </motion.div>
 
+      {/* 5 & 6. Content Layer */}
       <motion.div
         initial="hidden"
         animate={controls}
@@ -90,8 +118,8 @@ export default function Hero() {
         className="relative z-10 mx-auto max-w-[1200px] px-5 py-24 text-center sm:px-8 sm:py-32"
       >
         {/* Foreground CODEXA Brand */}
-        <motion.div variants={fadeUp} className="mb-4 flex justify-center">
-           <h1 className="font-heading text-6xl font-bold tracking-tight text-text sm:text-7xl md:text-8xl lg:text-9xl">
+        <motion.div variants={fadeUp} className="mb-6 flex justify-center">
+           <h1 className="font-heading text-[5rem] font-bold tracking-tight sm:text-8xl md:text-9xl lg:text-[10rem] xl:text-[12rem] bg-gradient-to-b from-text via-text to-text-secondary bg-clip-text text-transparent drop-shadow-2xl select-none text-center leading-[0.85]">
              CODEXA
            </h1>
         </motion.div>
@@ -139,15 +167,19 @@ export default function Hero() {
           className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
         >
           <a
-            href="#learn"
-            className="group inline-flex items-center gap-2 rounded-pill bg-accent px-8 py-3.5 text-base font-medium text-white shadow-card transition-all hover:bg-accent-deep hover:shadow-elevated"
+            href="/learn"
+            className="group inline-flex items-center gap-2 rounded-pill bg-accent px-8 py-3.5 text-base font-medium text-white shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:bg-accent-deep hover:shadow-glow"
           >
             Start Learning — Free
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
           </a>
           <a
             href="#roadmap"
-            className="group inline-flex items-center gap-2 rounded-pill border border-border bg-bg-card/60 px-8 py-3.5 text-base font-medium text-text-secondary backdrop-blur-sm transition-all hover:border-border-strong hover:text-text"
+            onClick={(e) => {
+              e.preventDefault();
+              document.querySelector('#roadmap')?.scrollIntoView({ behavior: 'smooth' });
+            }}
+            className="group inline-flex items-center gap-2 rounded-pill border border-border bg-bg-card/60 px-8 py-3.5 text-base font-medium text-text-secondary backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-border-strong hover:text-text"
           >
             <BookOpen className="h-4 w-4" aria-hidden="true" />
             Explore Curriculum
@@ -159,7 +191,7 @@ export default function Hero() {
           variants={fadeUp}
           className="mx-auto mt-16 max-w-3xl sm:mt-20"
         >
-          <div className="overflow-hidden rounded-xl border border-border bg-bg-card shadow-elevated">
+          <div className="overflow-hidden rounded-xl border border-border bg-bg-card shadow-elevated transition-transform duration-500 hover:shadow-glow">
             {/* Editor title bar */}
             <div className="flex items-center gap-2 border-b border-border px-4 py-3">
               <div className="flex gap-1.5">
@@ -206,7 +238,7 @@ export default function Hero() {
             </div>
           </div>
           {/* Trust indicators */}
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-text-muted">
+          <div className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm font-medium text-text-muted">
             <span>✦ Interactive lessons</span>
             <span>✦ Live code editor</span>
             <span>✦ AI mentor</span>
