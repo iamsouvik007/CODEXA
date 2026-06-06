@@ -47,10 +47,10 @@ export default function LessonSidebar({ activeLessonId, onSelect, activeSelectio
           title: 'Fundamentals',
           status: 'active',
           lessons: [
-            { id: '1', title: 'Lecture 01 - Introduction to JavaScript', difficulty: 'beginner' },
-            { id: '2', title: 'Lecture 02 - Variables & Data Types', difficulty: 'beginner' },
-            { id: '3', title: 'Lecture 03 - Operators & Expressions', difficulty: 'intermediate' },
-            { id: '4', title: 'Lecture 04 - Control Flow & Loops', difficulty: 'intermediate' }
+            { id: '1', title: 'Lesson 01 - Introduction to JavaScript', difficulty: 'beginner' },
+            { id: '2', title: 'Lesson 02 - Variables & Data Types', difficulty: 'beginner' },
+            { id: '3', title: 'Lesson 03 - Operators & Expressions', difficulty: 'beginner' },
+            { id: '4', title: 'Lesson 04 - Control Flow & Loops', difficulty: 'beginner' }
           ]
         },
         { id: 'functions', title: 'Functions', status: 'coming-soon', lessons: [] },
@@ -85,12 +85,12 @@ export default function LessonSidebar({ activeLessonId, onSelect, activeSelectio
 
   const renderLessonStateIcon = (lessonId) => {
     const complete = isLessonComplete(lessonId);
-    const lessonProgress = progress.lessonProgress?.[lessonId]?.scrollPercent || 0;
+    const bookmarked = isLessonBookmarked(lessonId);
 
     if (complete) {
       return <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-success" />;
-    } else if (lessonProgress > 0) {
-      return <CircleDot className="h-3.5 w-3.5 shrink-0 text-accent" />; // ◐ in progress
+    } else if (bookmarked) {
+      return <CircleDot className="h-3.5 w-3.5 shrink-0 text-accent" />; // orange bookmark
     } else {
       return <Circle className="h-3.5 w-3.5 shrink-0 text-text-muted" />; // ○ not started
     }
@@ -186,7 +186,7 @@ export default function LessonSidebar({ activeLessonId, onSelect, activeSelectio
                       {/* Hover Tooltip */}
                       <span className="pointer-events-none absolute left-14 top-1/2 -translate-y-1/2 z-50 rounded bg-[#0c0c0e] border border-border px-3 py-2 text-xs text-text opacity-0 transition-opacity duration-200 group-hover:opacity-100 whitespace-nowrap shadow-elevated flex flex-col gap-1">
                         <div className="font-semibold text-text flex items-center gap-1.5">
-                          <span>Lecture 0{idx + 1}</span>
+                          <span>Lesson 0{idx + 1}</span>
                           {isBookmarked && <Bookmark className="h-3 w-3 fill-accent text-accent" />}
                         </div>
                         <div className="text-text-secondary">{lesson.title}</div>

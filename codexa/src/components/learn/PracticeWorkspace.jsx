@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Play, RotateCcw, Copy, Check, Terminal, Code2, Cpu, AlertCircle } from 'lucide-react';
 import ExecutionVisualizer from './ExecutionVisualizer';
+import { useProgress } from '../../lib/ProgressContext';
 
 const initialCodes = {
   '1': `// Welcome to Codexa! Try running this code.\nconsole.log("Hello, World!");\nconsole.log("JavaScript is active!");`,
@@ -11,6 +12,7 @@ const initialCodes = {
 };
 
 export default function PracticeWorkspace({ lessonId = '3' }) {
+  const { triggerSandboxRun } = useProgress();
   const [code, setCode] = useState('');
   const [copied, setCopied] = useState(false);
   const [logs, setLogs] = useState([]);
@@ -37,6 +39,7 @@ export default function PracticeWorkspace({ lessonId = '3' }) {
   }, [lessonId]);
 
   const handleRun = useCallback(() => {
+    triggerSandboxRun();
     setRunning(true);
     setLogs([{ type: 'info', text: 'Executing program...' }]);
     const outputs = [];

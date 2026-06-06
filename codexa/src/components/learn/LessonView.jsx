@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Clock, BarChart3, BookOpen, CheckCircle2, ChevronRight } from 'lucide-react';
+import { Clock, BarChart3, BookOpen, CheckCircle2, ChevronRight, Circle } from 'lucide-react';
 import { useProgress } from '../../lib/ProgressContext';
 import { useNavigate } from 'react-router-dom';
 import { useAITutor } from '../../lib/AITutorContext';
@@ -13,7 +13,7 @@ import MarkdownRenderer from './MarkdownRenderer';
 
 export default function LessonView({ lesson, onOpenModal }) {
   const navigate = useNavigate();
-  const { isLessonComplete, markLessonComplete, updateLessonProgress } = useProgress();
+  const { isLessonComplete, updateLessonProgress, incrementStudyTime } = useProgress();
   const { setLessonContext } = useAITutor();
   const [activeTab, setActiveTab] = useState('lesson');
   const [scrollProgress, setScrollProgress] = useState(0);
@@ -21,6 +21,54 @@ export default function LessonView({ lesson, onOpenModal }) {
   const isComplete = isLessonComplete(lesson.id);
   const nextLesson = getNextLesson(lesson.id);
   const prevLesson = getPrevLesson(lesson.id);
+
+  // Active study timer effect
+  useEffect(() => {
+    let activeSeconds = 0;
+    let timer = null;
+
+    const startTimer = () => {
+      if (!timer) {
+        timer = setInterval(() => {
+          activeSeconds += 1;
+          if (activeSeconds >= 10) {
+            incrementStudyTime(activeSeconds);
+            activeSeconds = 0;
+          }
+        }, 1000);
+      }
+    };
+
+    const stopTimer = () => {
+      if (timer) {
+        clearInterval(timer);
+        timer = null;
+      }
+      if (activeSeconds > 0) {
+        incrementStudyTime(activeSeconds);
+        activeSeconds = 0;
+      }
+    };
+
+    if (document.visibilityState === 'visible') {
+      startTimer();
+    }
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        startTimer();
+      } else {
+        stopTimer();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      stopTimer();
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [lesson.id, incrementStudyTime]);
 
   // Sync active lesson context with AI Tutor
   useEffect(() => {
@@ -69,9 +117,7 @@ export default function LessonView({ lesson, onOpenModal }) {
     return () => clearTimeout(timeout);
   }, [scrollProgress, lesson.id, updateLessonProgress]);
 
-  const handleMarkComplete = useCallback(() => {
-    markLessonComplete(lesson.id);
-  }, [lesson.id, markLessonComplete]);
+
 
   const difficultyColors = {
     beginner: 'bg-success/10 text-success',
@@ -125,19 +171,21 @@ export default function LessonView({ lesson, onOpenModal }) {
               </div>
             </div>
 
-            {/* Mark complete button (desktop) */}
-            <button
-              onClick={handleMarkComplete}
-              disabled={isComplete}
-              className={`hidden items-center gap-2 rounded-pill px-4 py-2 text-sm font-medium transition-all sm:flex ${
-                isComplete
-                  ? 'border border-success/30 bg-success/10 text-success'
-                  : 'bg-accent text-white hover:bg-accent-deep'
-              }`}
-            >
-              <CheckCircle2 className="h-4 w-4" />
-              {isComplete ? 'Completed' : 'Mark Complete'}
-            </button>
+            {/* Status indicator (desktop) */}
+            {isComplete ? (
+              <div className="hidden items-center gap-2 rounded-full border border-success/30 bg-success/10 px-4 py-2 text-sm font-medium text-success sm:flex">
+                <CheckCircle2 className="h-4 w-4" />
+                <span>Completed</span>
+              </div>
+            ) : (
+              <div
+                className="hidden items-center gap-2 rounded-full border border-border bg-[#0b0c10] px-4 py-2 text-sm font-medium text-text-muted sm:flex"
+                title="Complete the Lesson Quiz and the Mock Test to mark this lesson as completed."
+              >
+                <Circle className="h-4 w-4" />
+                <span>In Progress</span>
+              </div>
+            )}
           </div>
 
           {/* Tabs */}

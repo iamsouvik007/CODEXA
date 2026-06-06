@@ -5,20 +5,19 @@ import { scaleUp } from '../../../lib/animations';
 import { useProgress } from '../../../lib/ProgressContext';
 
 export default function PracticeCard({ section, index }) {
-  const { addXP } = useProgress();
+  const { completeCodingChallenge } = useProgress();
   const [userInput, setUserInput] = useState('');
   const [checked, setChecked] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
   const [shake, setShake] = useState(false);
 
-  // Generate difficulty tags
-  const difficulties = ['Easy', 'Medium', 'Hard'];
+  // Difficulty tags — all beginner-level JS fundamentals, so only Easy/Medium
+  const difficulties = ['Easy', 'Medium', 'Easy'];
   const difficulty = difficulties[index % 3];
 
   const difficultyColors = {
     'Easy': 'border-success/30 bg-success/10 text-success',
     'Medium': 'border-warning/30 bg-warning/10 text-warning',
-    'Hard': 'border-red-500/30 bg-red-500/10 text-red-400'
   };
 
   // Try to parse out the expected answer and description
@@ -45,7 +44,7 @@ export default function PracticeCard({ section, index }) {
     setChecked(true);
 
     if (correct) {
-      addXP(20); // +20 XP for correct practice submissions
+      completeCodingChallenge(section.lessonId || "3", index);
     } else {
       setShake(true);
       setTimeout(() => setShake(false), 500);

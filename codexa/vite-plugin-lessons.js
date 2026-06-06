@@ -68,15 +68,8 @@ function estimateReadingTime(text) {
   return Math.max(1, Math.ceil(words / 200));
 }
 
-/**
- * Determines difficulty based on content complexity.
- */
 function determineDifficulty(sections, codeBlocks) {
-  const conceptCount = sections.length;
-  const codeCount = codeBlocks.length;
-  if (conceptCount <= 4 && codeCount <= 3) return 'beginner';
-  if (conceptCount <= 8 && codeCount <= 8) return 'intermediate';
-  return 'advanced';
+  return 'beginner';
 }
 
 /**

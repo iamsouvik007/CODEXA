@@ -91,6 +91,22 @@ const mockTestQuestions = [
   }
 ];
 
+const shuffleQuestion = (q) => {
+  if (!q.options || typeof q.correct !== 'number' || !Array.isArray(q.options)) return q;
+  const correctAnswer = q.options[q.correct];
+  const shuffled = [...q.options];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  const newCorrectIdx = shuffled.indexOf(correctAnswer);
+  return {
+    ...q,
+    options: shuffled,
+    correct: newCorrectIdx === -1 ? q.correct : newCorrectIdx
+  };
+};
+
 export default function QuizEngine({ lesson }) {
   const { saveQuizScore, submitMockTest, addXP } = useProgress();
   
@@ -100,23 +116,55 @@ export default function QuizEngine({ lesson }) {
   // Quiz state
   const [quizzes, setQuizzes] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [selectedAnswer, setSelectedAnswer] = useState(null); // the index the user picked
+  const [answeredCorrectly, setAnsweredCorrectly] = useState(null); // true/false/null
   const [showFeedback, setShowFeedback] = useState(false);
   const [score, setScore] = useState(0);
   const [finished, setFinished] = useState(false);
   const [shake, setShake] = useState(false);
 
   // Timer state
-  const [timeLeft, setTimeLeft] = useState(30); // 30s per question for Lesson Quiz, 300s total for Mock Test
-  const timerInterval = useRef(null);
+  const [timeLeft, setTimeLeft] = useState(30);
 
   const currentQuiz = quizzes[currentIndex];
 
+  // Active Timer Effect
+  useEffect(() => {
+    if (mode === 'select' || finished || showFeedback) {
+      return;
+    }
+
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          // Time expired
+          if (mode === 'quiz') {
+            setSelectedAnswer(-1);
+            setAnsweredCorrectly(false);
+            setShowFeedback(true);
+            setShake(true);
+            setTimeout(() => setShake(false), 500);
+          } else if (mode === 'mock-test') {
+            setFinished(true);
+            submitMockTest(score, quizzes.length, 'JavaScript', lesson.id);
+          }
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [mode, finished, showFeedback, score, quizzes.length, submitMockTest, lesson.id]);
+
   // Initialize Lesson Quiz
   const startLessonQuiz = () => {
-    setQuizzes(lesson.quiz || []);
+    const shuffled = (lesson.quiz || []).map(shuffleQuestion);
+    setQuizzes(shuffled);
     setCurrentIndex(0);
     setSelectedAnswer(null);
+    setAnsweredCorrectly(null);
     setShowFeedback(false);
     setScore(0);
     setFinished(false);
@@ -126,101 +174,64 @@ export default function QuizEngine({ lesson }) {
 
   // Initialize Timed Mock Test
   const startMockTest = () => {
-    setQuizzes(mockTestQuestions);
+    const shuffled = mockTestQuestions.map(shuffleQuestion);
+    setQuizzes(shuffled);
     setCurrentIndex(0);
     setSelectedAnswer(null);
+    setAnsweredCorrectly(null);
     setShowFeedback(false);
     setScore(0);
     setFinished(false);
     setMode('mock-test');
-    setTimeLeft(300); // 5 minutes (300 seconds) total
+    setTimeLeft(300); // 5 minutes total
   };
 
-  // Timer effect
-  useEffect(() => {
-    if (mode === 'select' || finished) return;
-
-    if (timeLeft <= 0) {
-      if (mode === 'quiz') {
-        // Question timer expired - treat as wrong and show feedback
-        handleAnswer(-1);
-      } else {
-        // Mock test timer expired - auto submit whole test
-        setFinished(true);
-        submitMockTest(score, quizzes.length, 'JavaScript');
-      }
-      return;
-    }
-
-    timerInterval.current = setInterval(() => {
-      setTimeLeft(prev => prev - 1);
-    }, 1000);
-
-    return () => {
-      if (timerInterval.current) clearInterval(timerInterval.current);
-    };
-  }, [timeLeft, mode, finished, score, quizzes.length]);
-
   const handleAnswer = useCallback((answer) => {
-    if (showFeedback) return;
-    setSelectedAnswer(answer);
-    
-    // Stop countdown for active question in quiz mode
-    if (mode === 'quiz') {
-      if (timerInterval.current) clearInterval(timerInterval.current);
-      setShowFeedback(true);
-    }
+    if (showFeedback || selectedAnswer !== null) return; // prevent double-click
 
     const isCorrect = currentQuiz.type === 'fill-blank'
       ? String(answer).toLowerCase().trim() === String(currentQuiz.correct).toLowerCase().trim()
       : answer === currentQuiz.correct;
 
+    setSelectedAnswer(answer);
+    setAnsweredCorrectly(isCorrect);
+
+    let nextScore = score;
     if (isCorrect) {
-      setScore(prev => prev + 1);
+      nextScore = score + 1;
+      setScore(nextScore);
       addXP(10); // +10 XP per correct question
     } else {
       setShake(true);
       setTimeout(() => setShake(false), 500);
-      
-      // In mock test mode, we do NOT show feedback per question!
-      // We immediately advance to keep the test flow
-      if (mode === 'mock-test') {
-        setTimeout(() => {
-          advanceQuestion();
-        }, 1000);
-      }
     }
 
-    if (mode === 'mock-test' && isCorrect) {
+    if (mode === 'quiz') {
+      setShowFeedback(true);
+    } else {
+      // mock-test: no per-question feedback, just advance after a brief pause
       setTimeout(() => {
-        advanceQuestion();
-      }, 1000);
-    }
-  }, [showFeedback, currentQuiz, mode]);
-
-  const advanceQuestion = () => {
-    setCurrentIndex(prev => {
-      if (prev < quizzes.length - 1) {
-        setSelectedAnswer(null);
-        return prev + 1;
-      } else {
-        setFinished(true);
-        if (mode === 'mock-test') {
-          submitMockTest(score + 1, quizzes.length, 'JavaScript'); // include this correct one
+        const nextIdx = currentIndex + 1;
+        if (nextIdx < quizzes.length) {
+          setCurrentIndex(nextIdx);
+          setSelectedAnswer(null);
+          setAnsweredCorrectly(null);
         } else {
-          saveQuizScore(lesson.id, score + 1, quizzes.length);
+          setFinished(true);
+          submitMockTest(nextScore, quizzes.length, 'JavaScript', lesson.id);
         }
-        return prev;
-      }
-    });
-  };
+      }, 800);
+    }
+  }, [showFeedback, selectedAnswer, currentQuiz, mode, score, addXP, currentIndex, quizzes.length, submitMockTest]);
 
   const handleNext = useCallback(() => {
-    if (currentIndex < quizzes.length - 1) {
-      setCurrentIndex(prev => prev + 1);
+    const nextIdx = currentIndex + 1;
+    if (nextIdx < quizzes.length) {
+      setCurrentIndex(nextIdx);
       setSelectedAnswer(null);
+      setAnsweredCorrectly(null);
       setShowFeedback(false);
-      setTimeLeft(30); // Reset timer
+      setTimeLeft(30); // reset timer for next question
     } else {
       setFinished(true);
       saveQuizScore(lesson.id, score, quizzes.length);
@@ -233,6 +244,7 @@ export default function QuizEngine({ lesson }) {
     setScore(0);
     setCurrentIndex(0);
     setSelectedAnswer(null);
+    setAnsweredCorrectly(null);
     setShowFeedback(false);
   }, []);
 
@@ -257,7 +269,7 @@ export default function QuizEngine({ lesson }) {
             </div>
             <h3 className="font-heading text-lg font-bold text-text mb-2">Active Lesson Quiz</h3>
             <p className="text-xs text-text-secondary leading-relaxed">
-              Test your knowledge of the active lecture material. Consists of {lesson.quiz?.length || 0} questions with a 30-second timer per question.
+              Test your knowledge of the active lesson material. Consists of {lesson.quiz?.length || 0} questions with a 30-second timer per question.
             </p>
           </div>
           <button
@@ -374,20 +386,21 @@ export default function QuizEngine({ lesson }) {
         className="rounded-xl border border-border bg-[#0b0c10] p-6 shadow-card"
       >
         <span className="mb-3 inline-block rounded bg-[#161720] border border-border/50 px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-text-muted">
-          {currentQuiz.type.replace('-', ' ')}
+          {currentQuiz?.type?.replace('-', ' ')}
         </span>
 
-        <h3 className="mb-5 font-heading text-base font-bold text-text leading-snug">{currentQuiz.question}</h3>
+        <h3 className="mb-5 font-heading text-base font-bold text-text leading-snug">{currentQuiz?.question}</h3>
 
         {/* Options */}
         <div className="space-y-2.5">
-          {currentQuiz.options?.map((option, i) => {
+          {currentQuiz?.options?.map((option, i) => {
             const isSelected = selectedAnswer === i;
             const isCorrect = i === currentQuiz.correct;
 
             let cardStyle = 'border-border bg-bg-elevated text-text-secondary hover:border-border-strong hover:text-text';
             let dotStyle = 'border-border text-text-muted';
 
+            // Only show correct/incorrect styling after an answer has been submitted
             if (selectedAnswer !== null) {
               if (isCorrect) {
                 cardStyle = 'border-success/40 bg-success/10 text-success';
@@ -397,10 +410,8 @@ export default function QuizEngine({ lesson }) {
                 dotStyle = 'border-red-500 bg-red-500 text-white';
               } else {
                 cardStyle = 'border-border/40 bg-bg-card/40 text-text-muted opacity-50';
+                dotStyle = 'border-border text-text-muted opacity-50';
               }
-            } else if (isSelected) {
-              cardStyle = 'border-accent bg-accent/10 text-accent font-semibold';
-              dotStyle = 'border-accent';
             }
 
             return (
@@ -408,7 +419,7 @@ export default function QuizEngine({ lesson }) {
                 key={i}
                 onClick={() => handleAnswer(i)}
                 disabled={selectedAnswer !== null}
-                className={`flex w-full items-center gap-3.5 rounded-lg border p-3.5 text-left text-xs font-medium transition-all cursor-pointer ${cardStyle}`}
+                className={`flex w-full items-center gap-3.5 rounded-lg border p-3.5 text-left text-xs font-medium transition-all cursor-pointer disabled:cursor-default ${cardStyle}`}
               >
                 <span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[10px] font-bold ${dotStyle}`}>
                   {String.fromCharCode(65 + i)}
@@ -419,7 +430,7 @@ export default function QuizEngine({ lesson }) {
           })}
         </div>
 
-        {/* Correct/Incorrect feedback */}
+        {/* Correct/Incorrect feedback — uses answeredCorrectly (not stale selectedAnswer) */}
         <AnimatePresence>
           {showFeedback && (
             <motion.div
@@ -427,16 +438,16 @@ export default function QuizEngine({ lesson }) {
               animate={{ opacity: 1, y: 0 }}
               className="mt-4 rounded-lg border border-border bg-[#0e0f14] p-4 flex gap-3 text-xs leading-relaxed text-text-secondary"
             >
-              {selectedAnswer === currentQuiz.correct ? (
-                <CheckCircle2 className="h-4.5 w-4.5 text-success shrink-0 mt-0.5" />
+              {answeredCorrectly ? (
+                <CheckCircle2 className="h-4 w-4 text-success shrink-0 mt-0.5" />
               ) : (
-                <ShieldAlert className="h-4.5 w-4.5 text-red-400 shrink-0 mt-0.5" />
+                <ShieldAlert className="h-4 w-4 text-red-400 shrink-0 mt-0.5" />
               )}
               <div>
-                <p className={`font-bold mb-1 ${selectedAnswer === currentQuiz.correct ? 'text-success' : 'text-red-400'}`}>
-                  {selectedAnswer === currentQuiz.correct ? 'Correct Answer!' : 'Incorrect Answer'}
+                <p className={`font-bold mb-1 ${answeredCorrectly ? 'text-success' : 'text-red-400'}`}>
+                  {answeredCorrectly ? 'Correct Answer!' : selectedAnswer === -1 ? "Time's Up!" : 'Incorrect Answer'}
                 </p>
-                <p>{currentQuiz.explanation}</p>
+                <p>{currentQuiz?.explanation}</p>
               </div>
             </motion.div>
           )}
@@ -447,7 +458,7 @@ export default function QuizEngine({ lesson }) {
           <motion.button
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            onClick={advanceQuestion}
+            onClick={handleNext}
             className="mt-5 flex items-center gap-2 rounded-lg bg-accent text-white px-5 py-2 text-xs font-bold uppercase tracking-wider hover:bg-accent-deep transition-all cursor-pointer"
           >
             {currentIndex < quizzes.length - 1 ? 'Next Question' : 'See Results'}

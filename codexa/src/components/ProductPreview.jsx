@@ -188,7 +188,7 @@ export default function ProductPreview() {
                       <span className="bg-accent/10 text-accent px-1.5 py-0.5 rounded">L3</span>
                       <span>Learn &gt; JS Track &gt; Module 1</span>
                     </div>
-                    <h2 className="text-lg font-bold text-text font-heading">Lecture 03 - Operators & Expressions</h2>
+                    <h2 className="text-lg font-bold text-text font-heading">Lesson 03 - Operators & Expressions</h2>
 
                     {/* Concept card */}
                     <div className="rounded-lg border border-border bg-[#0d0d0f] p-4 text-left">
@@ -368,7 +368,7 @@ export default function ProductPreview() {
                         <span className="bg-accent/10 text-accent px-1.5 py-0.5 rounded">L3</span>
                         <span>Learn &gt; JS Track</span>
                       </div>
-                      <h2 className="text-lg font-bold text-text">Lecture 03 - Operators & Expressions</h2>
+                      <h2 className="text-lg font-bold text-text">Lesson 03 - Operators & Expressions</h2>
                       <div className="rounded-lg border border-border bg-[#0d0d0f] p-4 text-[11px] leading-relaxed text-text-secondary">
                         JavaScript has two ways to check equality: == (loose) and === (strict). Loose equality tries to force types to match...
                       </div>

@@ -425,10 +425,10 @@ export default function Hero() {
         >
           <a
             href="/learn"
-            className="group inline-flex items-center gap-2 rounded-pill bg-accent px-8 py-3.5 text-base font-medium text-white shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:bg-accent-deep hover:shadow-glow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
+            className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-accent to-amber-500 px-8 py-3.5 text-base font-medium text-white shadow-[0_4px_20px_rgba(249,115,22,0.25)] hover:shadow-[0_0_30px_rgba(249,115,22,0.45)] hover:scale-[1.03] active:scale-[0.98] transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
           >
             Start Learning — Free
-            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
           </a>
           <a
             href="#roadmap"

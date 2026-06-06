@@ -116,6 +116,7 @@ export default function WebDevTrack() {
   };
 
   const handleLessonChange = (id) => {
+    setActiveTab('lesson');
     navigate(`/learn/web-development/${id}`);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -267,7 +268,7 @@ export default function WebDevTrack() {
                       </div>
                       <h3 className="font-heading text-lg font-semibold text-text">Lesson Content Missing</h3>
                       <p className="mt-2 text-sm text-text-secondary max-w-md">
-                        The content for <strong>Lecture {activeSelection.id}</strong> could not be loaded. Please verify that the markdown file <code>notes/{activeSelection.id}/{activeSelection.id}.md</code> exists.
+                        The content for <strong>Lesson {activeSelection.id}</strong> could not be loaded. Please verify that the markdown file <code>notes/{activeSelection.id}/{activeSelection.id}.md</code> exists.
                       </p>
                     </div>
                   )

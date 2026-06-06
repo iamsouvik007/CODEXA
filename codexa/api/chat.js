@@ -1,147 +1,65 @@
-/**
- * Provider-agnostic AI client for Codexa.
- * Supports OpenAI, NVIDIA NIM, Groq, Claude, and Google Gemini.
- * Keeps keys secure on the user's device (localStorage only).
- *
- * CORS Notes:
- * - In development (localhost): Vite proxy handles CORS for all providers.
- * - In production: Only Gemini supports direct browser calls without CORS issues.
- *   OpenAI/Groq/Claude/NVIDIA will fail in production unless a server proxy is set up.
- *   Use the mock key (sk-mock-key) for testing without a real API key.
- */
-
-const isLocalhost =
-  typeof window !== 'undefined' &&
-  (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
-
-// Helper to determine endpoints based on localhost proxy
-const getApiBase = (provider) => {
-  switch (provider) {
-    case 'openai':
-      return isLocalhost ? '/api-openai' : 'https://api.openai.com/v1';
-    case 'nvidia':
-      return isLocalhost ? '/api-nvidia' : 'https://integrate.api.nvidia.com/v1';
-    case 'groq':
-      return isLocalhost ? '/api-groq' : 'https://api.groq.com/openai/v1';
-    case 'claude':
-      return isLocalhost ? '/api-claude' : 'https://api.anthropic.com/v1';
-    case 'gemini':
-      // Gemini REST API supports browser calls directly (no CORS restriction)
-      return 'https://generativelanguage.googleapis.com/v1beta';
-    default:
-      return '';
-  }
-};
-
-/**
- * Validates the API key format based on selected provider rules.
- */
-export function validateKeyFormat(provider, apiKey) {
-  if (!apiKey || typeof apiKey !== 'string') return false;
-  const trimmed = apiKey.trim();
-  if (trimmed.length < 10) return false;
-
-  // If testing with mock key, pass validation
-  if (trimmed.toLowerCase().includes('mock') || trimmed.toLowerCase().includes('test')) {
-    return true;
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  switch (provider) {
-    case 'openai':
-      // sk-... or sk-proj-...
-      return trimmed.startsWith('sk-');
-    case 'nvidia':
-      // nvapi-...
-      return trimmed.startsWith('nvapi-');
-    case 'groq':
-      // gsk_...
-      return trimmed.startsWith('gsk_');
-    case 'claude':
-      // sk-ant-...
-      return trimmed.startsWith('sk-ant-');
-    case 'gemini':
-      // Google API keys — typically 39 chars alphanumeric
-      return trimmed.length >= 20;
-    default:
-      return false;
-  }
-}
+  const { provider, apiKey, messages, systemPrompt, testConnectionOnly } = req.body;
 
-/**
- * Tests connection to the selected provider by making a minimal request.
- */
-async function tryProxy(payload) {
+  if (!provider) {
+    return res.status(400).json({ error: 'Missing provider parameter' });
+  }
+
+  // Resolve API Key
+  let resolvedKey = apiKey || '';
+  const isMock = !resolvedKey || resolvedKey.trim().toLowerCase().includes('mock') || resolvedKey.trim().toLowerCase().includes('test');
+
+  if (isMock) {
+    const envKeyMap = {
+      openai: process.env.OPENAI_API_KEY,
+      nvidia: process.env.NVIDIA_API_KEY,
+      groq: process.env.GROQ_API_KEY,
+      claude: process.env.CLAUDE_API_KEY,
+      gemini: process.env.GEMINI_API_KEY,
+    };
+    const envKey = envKeyMap[provider];
+    if (envKey) {
+      resolvedKey = envKey;
+    }
+  }
+
+  // If still mock or empty, return mock responses
+  if (!resolvedKey || resolvedKey.trim().toLowerCase().includes('mock') || resolvedKey.trim().toLowerCase().includes('test')) {
+    if (testConnectionOnly) {
+      return res.status(200).json({ success: true, mock: true });
+    }
+    const lastUserMsg = messages?.[messages.length - 1]?.text || '';
+    return res.status(200).json({ text: getMockResponse(lastUserMsg) });
+  }
+
+  const trimmedKey = resolvedKey.trim();
+
   try {
-    const response = await fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-
-    if (response.status === 404) {
-      return { fallback: true };
+    if (testConnectionOnly) {
+      const success = await performTestConnection(provider, trimmedKey);
+      return res.status(200).json({ success });
     }
 
-    const contentType = response.headers.get('content-type') || '';
-    if (contentType.includes('text/html')) {
-      return { fallback: true };
-    }
-
-    if (!response.ok) {
-      const errText = await response.text();
-      throw new Error(`Proxy returned status ${response.status}: ${errText}`);
-    }
-
-    const data = await response.json();
-    return { data, fallback: false };
-  } catch (err) {
-    console.warn('[Codexa] API proxy connection failed, attempting fallback:', err);
-    return { fallback: true };
+    const text = await performCall(provider, trimmedKey, messages, systemPrompt);
+    return res.status(200).json({ text });
+  } catch (error) {
+    console.error('Server-side API proxy error:', error);
+    return res.status(500).json({ error: error.message || 'Internal Server Error' });
   }
 }
 
-/**
- * Tests connection to the selected provider by making a minimal request.
- */
-export async function testConnection(provider, apiKey) {
-  const trimmedKey = apiKey.trim();
-
-  // If it's a mock key, bypass network and succeed after simulated delay
-  if (trimmedKey.toLowerCase().includes('mock') || trimmedKey.toLowerCase().includes('test')) {
-    await new Promise((resolve) => setTimeout(resolve, 1200));
-    return true;
-  }
-
-  // 1. Try serverless function proxy first
-  const { data, fallback } = await tryProxy({
-    provider,
-    apiKey: trimmedKey,
-    testConnectionOnly: true
-  });
-
-  if (!fallback) {
-    return data.success;
-  }
-
-  // 2. Direct browser fallback
-  // Warn if non-Gemini provider is used in production (CORS will likely block)
-  if (!isLocalhost && provider !== 'gemini') {
-    console.warn(
-      `[Codexa] Provider "${provider}" may encounter CORS errors in production. ` +
-      `Consider using Gemini which supports direct browser calls.`
-    );
-  }
-
-  const base = getApiBase(provider);
+async function performTestConnection(provider, trimmedKey) {
   const controller = new AbortController();
   const id = setTimeout(() => controller.abort(), 10000); // 10s timeout
 
   try {
     let response;
-
     if (provider === 'gemini') {
-      // Gemini uses a different endpoint style
-      const url = `${base}/models/gemini-2.0-flash:generateContent?key=${trimmedKey}`;
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${trimmedKey}`;
       response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -152,7 +70,7 @@ export async function testConnection(provider, apiKey) {
         signal: controller.signal
       });
     } else if (provider === 'claude') {
-      const url = `${base}/messages`;
+      const url = `https://api.anthropic.com/v1/messages`;
       response = await fetch(url, {
         method: 'POST',
         headers: {
@@ -168,12 +86,15 @@ export async function testConnection(provider, apiKey) {
         signal: controller.signal
       });
     } else {
-      // OpenAI-compatible (openai, nvidia, groq)
+      const base =
+        provider === 'openai' ? 'https://api.openai.com/v1' :
+        provider === 'nvidia' ? 'https://integrate.api.nvidia.com/v1' :
+        'https://api.groq.com/openai/v1';
       const url = `${base}/chat/completions`;
       const model =
         provider === 'openai' ? 'gpt-4o-mini' :
         provider === 'nvidia' ? 'meta/llama-3.1-8b-instruct' :
-        'llama3-8b-8192'; // groq
+        'llama3-8b-8192';
 
       response = await fetch(url, {
         method: 'POST',
@@ -189,92 +110,34 @@ export async function testConnection(provider, apiKey) {
         signal: controller.signal
       });
     }
-
     clearTimeout(id);
     return response.ok;
-  } catch (error) {
+  } catch (err) {
     clearTimeout(id);
-    // Check for CORS / network errors — give a clearer message
-    if (error.name === 'AbortError') {
-      throw new Error('Connection timed out. Check your network and API key.');
-    }
-    if (error.message?.includes('Failed to fetch') || error.message?.includes('NetworkError')) {
-      if (!isLocalhost && provider !== 'gemini') {
-        throw new Error(
-          `CORS error: "${provider}" cannot be called directly from the browser in production. ` +
-          `Please use Gemini, or use the demo key "sk-mock-key" to explore features.`
-        );
-      }
-    }
-    console.error('[Codexa] API Verification error:', error);
+    console.error('Test connection API proxy error:', err);
     return false;
   }
 }
 
-/**
- * Call the configured AI provider.
- */
-export async function callAIProvider(provider, apiKey, messages, systemPrompt) {
-  const trimmedKey = apiKey.trim();
-  const isMockKey = trimmedKey.toLowerCase().includes('mock') || trimmedKey.toLowerCase().includes('test');
-
-  // 1. Try serverless function proxy first
-  const { data, fallback } = await tryProxy({
-    provider,
-    apiKey: trimmedKey,
-    messages,
-    systemPrompt
-  });
-
-  if (!fallback) {
-    return data.text || '';
-  }
-
-  // 2. Direct browser fallback
-  // Handle mock responses
-  if (isMockKey) {
-    await new Promise((resolve) => setTimeout(resolve, 1200));
-    const lastUserMsg = messages[messages.length - 1]?.text || '';
-    return getMockResponse(lastUserMsg);
-  }
-
-  // Warn about CORS in production for non-Gemini providers
-  if (!isLocalhost && provider !== 'gemini') {
-    throw new Error(
-      `The "${provider}" provider cannot be called directly from the browser in production due to CORS restrictions. ` +
-      `Please switch to Gemini (which supports browser calls) or use the demo key "sk-mock-key".`
-    );
-  }
-
-  const base = getApiBase(provider);
-
-  // Map messages from Codexa internal format to API format
+async function performCall(provider, trimmedKey, messages, systemPrompt) {
   const formattedMessages = messages.map(msg => ({
     role: msg.role === 'ai' ? 'assistant' : msg.role,
     content: msg.text
   }));
 
   if (provider === 'gemini') {
-    // Gemini API format is different from OpenAI
-    const url = `${base}/models/gemini-2.0-flash:generateContent?key=${trimmedKey}`;
-
-    // Convert system prompt + messages to Gemini "contents" format
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${trimmedKey}`;
     const contents = [];
-
-    // Add system instruction as first user turn (Gemini doesn't have a system role in this API)
     if (systemPrompt) {
       contents.push({ role: 'user', parts: [{ text: `[System Instructions]\n${systemPrompt}` }] });
       contents.push({ role: 'model', parts: [{ text: 'Understood. I will follow those instructions.' }] });
     }
-
-    // Add conversation history
     for (const msg of formattedMessages) {
       contents.push({
         role: msg.role === 'assistant' ? 'model' : 'user',
         parts: [{ text: msg.content }]
       });
     }
-
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -283,17 +146,14 @@ export async function callAIProvider(provider, apiKey, messages, systemPrompt) {
         generationConfig: { maxOutputTokens: 1024, temperature: 0.7 }
       })
     });
-
     if (!response.ok) {
       const errText = await response.text();
       throw new Error(`Gemini API error: ${response.status} - ${errText}`);
     }
-
-    const geminiData = await response.json();
-    return geminiData.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const data = await response.json();
+    return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
   }
 
-  // OpenAI-compatible providers
   let url = '';
   let headers = {
     'Content-Type': 'application/json',
@@ -303,28 +163,28 @@ export async function callAIProvider(provider, apiKey, messages, systemPrompt) {
 
   switch (provider) {
     case 'openai':
-      url = `${base}/chat/completions`;
+      url = 'https://api.openai.com/v1/chat/completions';
       body = {
         model: 'gpt-4o-mini',
         messages: [{ role: 'system', content: systemPrompt }, ...formattedMessages]
       };
       break;
     case 'nvidia':
-      url = `${base}/chat/completions`;
+      url = 'https://integrate.api.nvidia.com/v1/chat/completions';
       body = {
         model: 'meta/llama-3.1-8b-instruct',
         messages: [{ role: 'system', content: systemPrompt }, ...formattedMessages]
       };
       break;
     case 'groq':
-      url = `${base}/chat/completions`;
+      url = 'https://api.groq.com/openai/v1/chat/completions';
       body = {
         model: 'llama3-8b-8192',
         messages: [{ role: 'system', content: systemPrompt }, ...formattedMessages]
       };
       break;
     case 'claude':
-      url = `${base}/messages`;
+      url = 'https://api.anthropic.com/v1/messages';
       headers = {
         'Content-Type': 'application/json',
         'x-api-key': trimmedKey,
@@ -352,20 +212,17 @@ export async function callAIProvider(provider, apiKey, messages, systemPrompt) {
     throw new Error(`API error: ${response.status} - ${errText}`);
   }
 
-  const resultData = await response.json();
+  const data = await response.json();
   if (provider === 'claude') {
-    return resultData.content[0]?.text || '';
+    return data.content[0]?.text || '';
   } else {
-    return resultData.choices[0]?.message?.content || '';
+    return data.choices[0]?.message?.content || '';
   }
 }
 
-/**
- * Returns a educational mock response for demo keys.
- */
 function getMockResponse(query) {
   const q = query.toLowerCase();
-  
+
   if (q.includes('analogy')) {
     return `Here is a real-world analogy for you:
     
@@ -373,7 +230,7 @@ Think of variables like storage boxes in a warehouse.
 * **Primitive variables** (like numbers or booleans) are small items that fit directly inside the box. When you copy them, you duplicate the item.
 * **Objects and Arrays** are large machines. They don't fit inside the box. Instead, the box contains a piece of paper with the GPS address (reference) of where the machine is kept in the main room. When you copy it, you copy the address paper, so both boxes point to the exact same machine!`;
   }
-  
+
   if (q.includes('debug') || q.includes('error')) {
     return `Let's debug this code together!
     
@@ -403,7 +260,6 @@ run();
 * B) \`20\`
 * C) \`ReferenceError\` (Temporal Dead Zone)
 * D) \`undefined\`
-
 *Think about where the variable is declared and try to answer!*`;
   }
 
@@ -424,7 +280,6 @@ Unlike \`var\` which is hoisted as \`undefined\`, \`let\` and \`const\` are hois
 * **Strict Equality**: Always use \`===\` to check for both value and type equality without implicit type conversion.`;
   }
 
-  // Default response
   return `I'm your Codexa AI Tutor, currently operating with a **demo/mock key**. 
 
 I'm ready to help you learn! Here are some things you can ask me:

@@ -1,9 +1,9 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, CheckCircle2, Circle, Clock, BookOpen } from 'lucide-react';
+import { ChevronRight, CheckCircle2, Circle, Clock, BookOpen, CircleDot } from 'lucide-react';
 import { useProgress } from '../../lib/ProgressContext';
 
 export default function SidebarModule({ module, lessons, activeLessonId, isExpanded, onToggle, onLessonSelect }) {
-  const { isLessonComplete } = useProgress();
+  const { isLessonComplete, isLessonBookmarked } = useProgress();
   const completedCount = lessons.filter(l => isLessonComplete(l.id)).length;
   const progressPct = lessons.length > 0 ? Math.round((completedCount / lessons.length) * 100) : 0;
 
@@ -50,6 +50,7 @@ export default function SidebarModule({ module, lessons, activeLessonId, isExpan
               {lessons.map((lesson) => {
                 const isActive = lesson.id === activeLessonId;
                 const isComplete = isLessonComplete(lesson.id);
+                const isBookmarked = isLessonBookmarked(lesson.id);
 
                 return (
                   <button
@@ -65,8 +66,8 @@ export default function SidebarModule({ module, lessons, activeLessonId, isExpan
                     {/* Completion icon */}
                     {isComplete ? (
                       <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-success" />
-                    ) : isActive ? (
-                      <BookOpen className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent" />
+                    ) : isBookmarked ? (
+                      <CircleDot className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent" />
                     ) : (
                       <Circle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-text-muted" />
                     )}

@@ -34,4 +34,4 @@ export default defineConfig({
     }
   }
 })
-// Trigger reload for lessons plugin update
+// Trigger reload for lessons plugin update (force reload)

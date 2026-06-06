@@ -5,10 +5,10 @@ import { useScrollReveal, fadeUp, staggerContainer, scaleUp } from '../lib/anima
 
 const providers = [
   {
-    title: 'Strike',
+    title: 'Thunder',
     badge: 'Featured Partner',
     desc: 'Project-based software engineering learning program.',
-    icon: Zap,
+    image: '/thunder.png',
     href: 'https://strikes.in/',
     buttonText: 'Learn More',
     featured: true,
@@ -64,14 +64,29 @@ export default function TrustedProviders() {
                 <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-accent/[0.03] to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" aria-hidden="true" />
 
                 <div className="relative flex h-full flex-col">
-                  {/* Icon + Badge */}
-                  <div className="mb-5 flex items-start justify-between">
-                    <div className={`flex h-12 w-12 items-center justify-center rounded-xl transition-colors duration-300 ${provider.featured ? 'bg-[#ff5f57]/10 group-hover:bg-[#ff5f57]/20' : 'bg-bg-elevated group-hover:bg-accent/10'}`}>
-                      <provider.icon className={`h-6 w-6 ${provider.featured ? 'text-[#ff5f57]' : 'text-text-muted group-hover:text-accent'}`} aria-hidden="true" />
-                    </div>
-                    <span className={`rounded-full px-2.5 py-1 text-[11px] font-medium tracking-wide ${provider.featured ? 'bg-[#ff5f57]/10 text-[#ff5f57]' : 'bg-bg-elevated text-text-muted'}`}>
-                      {provider.badge}
-                    </span>
+                  {/* Icon + Badge OR Full-Width Card Banner Image */}
+                  <div className="mb-5">
+                    {provider.image ? (
+                      <div className="relative h-32 w-full overflow-hidden rounded-xl border border-border/40 bg-black/20">
+                        <img
+                          src={provider.image}
+                          alt={provider.title}
+                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                        <span className="absolute top-3 right-3 rounded-full bg-[#ff5f57] px-2.5 py-0.5 text-[10px] font-bold tracking-wide text-white shadow-sm">
+                          {provider.badge}
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="flex items-start justify-between">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-bg-elevated transition-colors duration-300 group-hover:bg-accent/10">
+                          <provider.icon className="h-6 w-6 text-text-muted transition-colors duration-300 group-hover:text-accent" aria-hidden="true" />
+                        </div>
+                        <span className="rounded-full bg-bg-elevated px-2.5 py-1 text-[11px] font-medium text-text-muted">
+                          {provider.badge}
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Content */}

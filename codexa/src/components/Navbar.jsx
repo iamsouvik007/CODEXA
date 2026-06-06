@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Sparkles, ChevronDown, Video, FileText, MessageSquare } from 'lucide-react';
+import { Menu, X, Sparkles, ChevronDown, Video, FileText, MessageSquare, ArrowRight } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAITutor } from '../lib/AITutorContext';
 
@@ -194,9 +194,10 @@ export default function Navbar({ onOpenModal }) {
             <a
               href="/learn"
               onClick={(e) => handleNavClick(e, { href: '/learn' })}
-              className="group relative rounded-pill bg-accent px-5 py-2 text-sm font-medium text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-accent-deep hover:shadow-glow"
+              className="group inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-accent to-amber-500 px-5 py-2 text-sm font-medium text-white shadow-[0_4px_15px_rgba(249,115,22,0.2)] hover:shadow-[0_0_25px_rgba(249,115,22,0.4)] hover:scale-[1.03] active:scale-[0.98] transition-all duration-300 ease-out"
             >
               Start Learning
+              <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
             </a>
           </div>
 
@@ -265,9 +266,10 @@ export default function Navbar({ onOpenModal }) {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="mt-4 flex items-center justify-center rounded-pill bg-accent px-8 py-4 text-lg font-medium text-white shadow-card"
+                className="mt-4 flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-accent to-amber-500 px-8 py-4 text-lg font-medium text-white shadow-[0_4px_20px_rgba(249,115,22,0.25)] hover:shadow-[0_0_30px_rgba(249,115,22,0.45)] hover:scale-[1.03] active:scale-[0.98] transition-all duration-300 ease-out"
               >
                 Start Learning
+                <ArrowRight className="h-5 w-5" aria-hidden="true" />
               </motion.a>
             </nav>
           </motion.div>

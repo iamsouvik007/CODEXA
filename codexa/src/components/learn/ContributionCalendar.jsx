@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 
-export default function ContributionCalendar({ activityData = {} }) {
+export default function ContributionCalendar({ dailyActivity = {} }) {
   // We will display a 24-week grid ending today (Sunday through Saturday rows)
   const gridData = useMemo(() => {
     const today = new Date();
@@ -15,8 +15,17 @@ export default function ContributionCalendar({ activityData = {} }) {
       const d = new Date(today);
       d.setDate(today.getDate() - i);
       const dateStr = d.toISOString().split('T')[0];
-      const level = activityData[dateStr] || 0; // 0, 1, or 2
-      days.push({ date: dateStr, level });
+      
+      const activity = dailyActivity[dateStr] || { activities: 0, xp: 0, studyTime: 0 };
+      const level = activity.activities === 0 ? 0 : activity.activities === 1 ? 1 : 2;
+
+      days.push({ 
+        date: dateStr, 
+        level,
+        activities: activity.activities,
+        xp: activity.xp,
+        studyTime: activity.studyTime
+      });
     }
     
     // Group into weeks (columns)
@@ -24,7 +33,7 @@ export default function ContributionCalendar({ activityData = {} }) {
       result.push(days.slice(i * 7, (i + 1) * 7));
     }
     return result;
-  }, [activityData]);
+  }, [dailyActivity]);
 
   const levelColors = {
     0: 'bg-[#141416] hover:bg-zinc-800 border-zinc-900/50',
@@ -32,7 +41,14 @@ export default function ContributionCalendar({ activityData = {} }) {
     2: 'bg-accent hover:bg-accent-soft border-accent/20 shadow-[0_0_8px_rgba(249,115,22,0.2)]'
   };
 
-  const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const formatDate = (dateStr) => {
+    try {
+      const options = { month: 'short', day: 'numeric', year: 'numeric' };
+      return new Date(dateStr).toLocaleDateString('en-US', options);
+    } catch {
+      return dateStr;
+    }
+  };
 
   return (
     <div className="rounded-xl border border-border bg-[#0b0b0d] p-5 shadow-card overflow-x-auto select-none">
@@ -68,11 +84,23 @@ export default function ContributionCalendar({ activityData = {} }) {
                     }`}
                   >
                     {/* Tooltip */}
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:flex flex-col items-center z-20 pointer-events-none">
-                      <div className="rounded bg-bg px-2 py-1 text-[9px] font-mono font-semibold text-text shadow-modal border border-border whitespace-nowrap">
-                        {day.level === 0 ? 'No activity' : day.level === 1 ? '1 contribution' : '2+ contributions'} on {day.date}
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:flex flex-col items-center z-20 pointer-events-none">
+                      <div className="rounded-xl bg-bg border border-border p-3 text-[10px] font-sans font-semibold text-text shadow-modal whitespace-nowrap space-y-1 bg-neutral-950/95 backdrop-blur-md">
+                        <div className="text-[9px] text-text-muted border-b border-border/40 pb-1 mb-1 font-mono">{formatDate(day.date)}</div>
+                        <div className="flex justify-between gap-4">
+                          <span className="text-text-secondary">Activities:</span>
+                          <span className="text-accent font-bold font-mono">{day.activities}</span>
+                        </div>
+                        <div className="flex justify-between gap-4">
+                          <span className="text-text-secondary">XP Earned:</span>
+                          <span className="text-yellow-500 font-bold font-mono">+{day.xp} XP</span>
+                        </div>
+                        <div className="flex justify-between gap-4">
+                          <span className="text-text-secondary">Study Time:</span>
+                          <span className="text-cyan-400 font-bold font-mono">{Math.round(day.studyTime / 60)} min</span>
+                        </div>
                       </div>
-                      <div className="w-1.5 h-1.5 bg-bg border-r border-b border-border rotate-45 -mt-1" />
+                      <div className="w-1.5 h-1.5 bg-neutral-950 border-r border-b border-border rotate-45 -mt-1" />
                     </div>
                   </motion.div>
                 ))}

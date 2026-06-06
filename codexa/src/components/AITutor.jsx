@@ -151,7 +151,7 @@ export default function AITutor() {
 
   // Setup state
   const [setupStep, setSetupStep] = useState(1); // 1: Select, 2: Key Input, 3: Verifying
-  const [selectedProvider, setSelectedProvider] = useState('openai'); // openai | nvidia | groq | claude
+  const [selectedProvider, setSelectedProvider] = useState('gemini'); // gemini | openai | nvidia | groq | claude
   const [apiKey, setApiKey] = useState('');
   const [showKey, setShowKey] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
@@ -296,12 +296,15 @@ export default function AITutor() {
     // 1. Format validation
     const isValidFormat = validateKeyFormat(selectedProvider, apiKey);
     if (!isValidFormat) {
-      let pref = '';
-      if (selectedProvider === 'openai') pref = "'sk-'";
-      if (selectedProvider === 'nvidia') pref = "'nvapi-'";
-      if (selectedProvider === 'groq') pref = "'gsk_'";
-      if (selectedProvider === 'claude') pref = "'sk-ant-'";
-      setVerifyError(`Invalid API Key format. Key must start with ${pref} and satisfy minimum length.`);
+      const prefMap = {
+        openai: "'sk-'",
+        nvidia: "'nvapi-'",
+        groq: "'gsk_'",
+        claude: "'sk-ant-'",
+        gemini: 'at least 20 characters (get one free at aistudio.google.com)',
+      };
+      const pref = prefMap[selectedProvider] || 'a valid format';
+      setVerifyError(`Invalid API Key format. ${selectedProvider === 'gemini' ? 'Key must be ' : 'Key must start with '}${pref}.`);
       return;
     }
 
@@ -402,10 +405,11 @@ Please check your network connection, verify that your API key is still valid, o
 
   // Provider configuration list
   const providers = [
-    { id: 'openai', name: 'OpenAI', desc: 'GPT-4o-mini & GPT-4o model access', placeholder: 'sk-xxxxxxxx...' },
-    { id: 'nvidia', name: 'NVIDIA NIM', desc: 'Llama 3.1 & Nemotron endpoints', placeholder: 'nvapi-xxxxxxxx...' },
-    { id: 'groq', name: 'Groq Cloud', desc: 'Ultra-fast Llama-3 compiler engine', placeholder: 'gsk_xxxxxxxx...' },
-    { id: 'claude', name: 'Anthropic Claude', desc: 'Claude 3.5 Haiku & Sonnet reasoning', placeholder: 'sk-ant-xxxxxxxx...' }
+    { id: 'gemini', name: 'Google Gemini', desc: '✅ Recommended — works in browser (no CORS). Free key at aistudio.google.com', placeholder: 'AIzaSy...' },
+    { id: 'openai', name: 'OpenAI', desc: 'GPT-4o-mini · Dev mode only (requires localhost proxy)', placeholder: 'sk-xxxxxxxx...' },
+    { id: 'groq', name: 'Groq Cloud', desc: 'Llama-3 ultra-fast · Dev mode only (requires localhost proxy)', placeholder: 'gsk_xxxxxxxx...' },
+    { id: 'nvidia', name: 'NVIDIA NIM', desc: 'Llama 3.1 & Nemotron · Dev mode only (requires localhost proxy)', placeholder: 'nvapi-xxxxxxxx...' },
+    { id: 'claude', name: 'Anthropic Claude', desc: 'Claude 3.5 Haiku · Dev mode only (requires localhost proxy)', placeholder: 'sk-ant-xxxxxxxx...' }
   ];
 
   return (
@@ -513,7 +517,7 @@ Please check your network connection, verify that your API key is still valid, o
                       Configure AI Tutor
                     </h3>
                     <p className="text-[11px] text-text-muted mt-1 leading-relaxed">
-                      Codexa features a provider-based local AI mentor. Choose your LLM engine to get started.
+                      Choose your AI provider. <span className="text-accent font-semibold">Gemini is recommended</span> — it's free and works directly in your browser without setup. Use <code className="bg-bg-elevated text-accent px-1 py-0.5 rounded text-[10px]">sk-mock-key</code> for a demo.
                     </p>
                   </div>
 
@@ -570,7 +574,11 @@ Please check your network connection, verify that your API key is still valid, o
                         Enter {providers.find(p => p.id === selectedProvider)?.name} API Key
                       </h3>
                       <p className="text-[11px] text-text-muted mt-1 leading-relaxed">
-                        API keys remain entirely on your local machine and are never shared. Fill a key below. Use <code className="bg-bg-elevated text-accent px-1 py-0.5 rounded text-[10px]">sk-mock-key</code> to demo locally.
+                        API keys are stored only on your local machine and never shared.
+                        {selectedProvider === 'gemini'
+                          ? <> Get a free key at <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" className="text-accent underline">aistudio.google.com</a>.</>
+                          : <> Or use <code className="bg-bg-elevated text-accent px-1 py-0.5 rounded text-[10px]">sk-mock-key</code> to demo locally.</>
+                        }
                       </p>
                     </div>
 

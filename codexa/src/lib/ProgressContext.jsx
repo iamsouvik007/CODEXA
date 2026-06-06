@@ -5,68 +5,91 @@ const ProgressContext = createContext(null);
 const STORAGE_KEY = 'codexa-progress';
 
 const defaultProgress = {
-  completedLessons: ['1', '2'], // Preset lessons 1 and 2 completed to show 29% progress as in the mockup
+  completedLessons: [], // Fresh start — no lessons pre-completed for new users
   bookmarkedLessons: [],
-  currentLesson: '3',
+  currentLesson: '1',
   currentModule: 'fundamentals',
   quizScores: {},
   learningStreak: {
-    currentStreak: 2,
-    lastStudyDate: new Date(Date.now() - 86400000).toISOString().split('T')[0], // yesterday
-    longestStreak: 3,
+    currentStreak: 0,
+    lastStudyDate: null,
+    longestStreak: 0,
   },
-  xp: 140, // Starter XP (2 completed lessons * 50 XP + quiz/vis XP)
-  achievements: ['Hello World', 'Code Runner'],
+  xp: 0,
+  achievements: [],
   mastery: {
-    concept: 65,
-    visualization: 50,
-    practice: 30,
-    quiz: 55,
-    revision: 70,
+    concept: 0,
+    visualization: 0,
+    practice: 0,
+    quiz: 0,
+    revision: 0,
   },
-  activityCalendar: (() => {
-    const calendar = {};
-    const today = new Date();
-    // Pre-populate some history for the contributions grid
-    for (let i = 1; i <= 60; i++) {
-      const d = new Date(today);
-      d.setDate(today.getDate() - i);
-      const dateStr = d.toISOString().split('T')[0];
-      if (i === 1 || i === 2) {
-        calendar[dateStr] = 2; // Heavy activity (streak days)
-      } else if (i % 4 === 0) {
-        calendar[dateStr] = 1; // Light activity
-      } else {
-        calendar[dateStr] = 0;
-      }
-    }
-    return calendar;
-  })(),
+  activityCalendar: {},
   dailyChallengeCompleted: false,
   mockTestHistory: [],
   streakJourneyStarted: false,
   lessonProgress: {},
-  totalStudyTimeMinutes: 42,
+  totalStudyTimeMinutes: 0,
+  completedChallenges: [],
+  completedMockTests: {},
+  dailyActivity: {},
+  totalStudyTimeSeconds: 0,
+  totalCorrectAnswers: 0,
+  totalQuestionsAttempted: 0,
+  hasRunCode: false,
 };
+
+// Version bump — increment this when the default data schema changes to wipe stale cache
+const DATA_VERSION = 3;
+const DATA_VERSION_KEY = 'codexa-progress-version';
 
 function loadProgress() {
   try {
+    const storedVersion = parseInt(localStorage.getItem(DATA_VERSION_KEY) || '0', 10);
+    if (storedVersion < DATA_VERSION) {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.setItem(DATA_VERSION_KEY, String(DATA_VERSION));
+      return { ...defaultProgress };
+    }
+
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       const parsed = JSON.parse(stored);
-      // Ensure complex objects exist
       return {
         ...defaultProgress,
         ...parsed,
         learningStreak: { ...defaultProgress.learningStreak, ...(parsed.learningStreak || {}) },
         mastery: { ...defaultProgress.mastery, ...(parsed.mastery || {}) },
         activityCalendar: { ...defaultProgress.activityCalendar, ...(parsed.activityCalendar || {}) },
+        completedChallenges: parsed.completedChallenges || [],
+        completedMockTests: parsed.completedMockTests || {},
+        dailyActivity: parsed.dailyActivity || {},
       };
     }
   } catch {
     // Ignore parse errors
   }
+  localStorage.setItem(DATA_VERSION_KEY, String(DATA_VERSION));
   return { ...defaultProgress };
+}
+
+function updateStreak(prevProgress, today) {
+  const streak = { ...prevProgress.learningStreak };
+  let bonusXp = 0;
+  if (streak.lastStudyDate !== today) {
+    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+    if (streak.lastStudyDate === yesterday || !streak.lastStudyDate) {
+      streak.currentStreak = (streak.currentStreak || 0) + 1;
+      if (streak.currentStreak % 7 === 0 && streak.currentStreak > 0) {
+        bonusXp = 100;
+      }
+    } else {
+      streak.currentStreak = 1;
+    }
+    streak.lastStudyDate = today;
+    streak.longestStreak = Math.max(streak.longestStreak, streak.currentStreak);
+  }
+  return { streak, bonusXp };
 }
 
 export function ProgressProvider({ children }) {
@@ -92,29 +115,24 @@ export function ProgressProvider({ children }) {
     setProgress(prev => {
       if (prev.completedLessons.includes(lessonId)) return prev;
       const today = new Date().toISOString().split('T')[0];
-      const streak = { ...prev.learningStreak };
+      const { streak, bonusXp } = updateStreak(prev, today);
 
-      // Update contribution calendar
       const updatedCalendar = { ...prev.activityCalendar, [today]: 2 };
 
-      // Note: Completion alone doesn't increment daily streak unless streak journey started
-      if (prev.streakJourneyStarted && streak.lastStudyDate !== today) {
-        const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
-        if (streak.lastStudyDate === yesterday) {
-          streak.currentStreak += 1;
-        } else {
-          streak.currentStreak = 1;
-        }
-        streak.lastStudyDate = today;
-        streak.longestStreak = Math.max(streak.longestStreak, streak.currentStreak);
+      const updatedDailyActivity = { ...(prev.dailyActivity || {}) };
+      if (!updatedDailyActivity[today]) {
+        updatedDailyActivity[today] = { activities: 0, xp: 0, studyTime: 0 };
       }
+      updatedDailyActivity[today].activities += 1;
+      updatedDailyActivity[today].xp += 20 + bonusXp;
 
       return {
         ...prev,
         completedLessons: [...prev.completedLessons, lessonId],
         learningStreak: streak,
         activityCalendar: updatedCalendar,
-        xp: prev.xp + 50, // +50 XP for lesson completion
+        dailyActivity: updatedDailyActivity,
+        xp: prev.xp + 20 + bonusXp, // +20 XP for lesson completion
       };
     });
   }, []);
@@ -145,62 +163,76 @@ export function ProgressProvider({ children }) {
     setProgress(prev => {
       if (prev.dailyChallengeCompleted) return prev;
       const today = new Date().toISOString().split('T')[0];
-      const streak = { ...prev.learningStreak };
+      const { streak, bonusXp } = updateStreak(prev, today);
       const updatedCalendar = { ...prev.activityCalendar, [today]: 2 };
 
-      if (streak.lastStudyDate !== today) {
-        const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
-        if (streak.lastStudyDate === yesterday || !streak.lastStudyDate) {
-          streak.currentStreak = (streak.currentStreak || 0) + 1;
-        } else {
-          streak.currentStreak = 1;
-        }
-        streak.lastStudyDate = today;
-        streak.longestStreak = Math.max(streak.longestStreak, streak.currentStreak);
+      const updatedDailyActivity = { ...(prev.dailyActivity || {}) };
+      if (!updatedDailyActivity[today]) {
+        updatedDailyActivity[today] = { activities: 0, xp: 0, studyTime: 0 };
       }
+      updatedDailyActivity[today].activities += 1;
+      updatedDailyActivity[today].xp += xpReward + bonusXp;
 
       return {
         ...prev,
         dailyChallengeCompleted: true,
         learningStreak: streak,
         activityCalendar: updatedCalendar,
-        xp: prev.xp + xpReward,
+        dailyActivity: updatedDailyActivity,
+        xp: prev.xp + xpReward + bonusXp,
       };
     });
   }, []);
 
-  const submitMockTest = useCallback((score, total, track = 'JavaScript') => {
-    const xpReward = Math.round((score / total) * 40);
+  const submitMockTest = useCallback((score, total, track = 'JavaScript', lessonId = null) => {
     setProgress(prev => {
+      const xpEarned = 50; // Mock Test Completed → +50 XP
       const today = new Date().toISOString().split('T')[0];
-      const streak = { ...prev.learningStreak };
+      const { streak, bonusXp } = updateStreak(prev, today);
       const updatedCalendar = { ...prev.activityCalendar, [today]: 2 };
-
-      if (streak.lastStudyDate !== today) {
-        const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
-        if (streak.lastStudyDate === yesterday || !streak.lastStudyDate) {
-          streak.currentStreak = (streak.currentStreak || 0) + 1;
-        } else {
-          streak.currentStreak = 1;
-        }
-        streak.lastStudyDate = today;
-        streak.longestStreak = Math.max(streak.longestStreak, streak.currentStreak);
-      }
 
       const newTest = {
         date: today,
         score,
         total,
         track,
+        lessonId,
         percentage: Math.round((score / total) * 100),
       };
+
+      const completedMockTests = { ...(prev.completedMockTests || {}) };
+      if (lessonId) {
+        completedMockTests[lessonId] = true;
+      }
+
+      let completedLessons = [...prev.completedLessons];
+      let finalXpEarned = xpEarned + bonusXp;
+
+      const updatedDailyActivity = { ...(prev.dailyActivity || {}) };
+      if (!updatedDailyActivity[today]) {
+        updatedDailyActivity[today] = { activities: 0, xp: 0, studyTime: 0 };
+      }
+      updatedDailyActivity[today].activities += 1;
+      updatedDailyActivity[today].xp += xpEarned + bonusXp;
+
+      if (lessonId && !completedLessons.includes(lessonId)) {
+        const isQuizDone = prev.quizScores[lessonId] !== undefined;
+        if (isQuizDone) {
+          completedLessons.push(lessonId);
+          finalXpEarned += 20; // +20 XP for Lesson Completed
+          updatedDailyActivity[today].xp += 20;
+        }
+      }
 
       return {
         ...prev,
         mockTestHistory: [...prev.mockTestHistory, newTest],
+        completedMockTests,
+        completedLessons,
         learningStreak: streak,
         activityCalendar: updatedCalendar,
-        xp: prev.xp + xpReward,
+        dailyActivity: updatedDailyActivity,
+        xp: prev.xp + finalXpEarned,
       };
     });
   }, []);
@@ -211,6 +243,13 @@ export function ProgressProvider({ children }) {
 
   const saveQuizScore = useCallback((lessonId, score, total) => {
     setProgress(prev => {
+      const isPassed = (score / total) >= 0.7;
+      const isPerfect = score === total;
+      
+      let xpEarned = 0;
+      if (isPassed) xpEarned += 30; // +30 XP for passing
+      if (isPerfect) xpEarned += 10; // +10 XP perfect quiz bonus
+
       const updatedScores = {
         ...prev.quizScores,
         [lessonId]: {
@@ -221,20 +260,45 @@ export function ProgressProvider({ children }) {
         },
       };
 
-      // Recalculate quiz accuracy
-      const quizAttempts = Object.values(updatedScores);
-      const totalCorrect = quizAttempts.reduce((sum, s) => sum + s.bestScore, 0);
-      const totalQuestions = quizAttempts.reduce((sum, s) => sum + s.total, 0);
-      const accuracy = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
+      const updatedTotalCorrect = (prev.totalCorrectAnswers || 0) + score;
+      const updatedTotalAttempted = (prev.totalQuestionsAttempted || 0) + total;
+      const accuracy = updatedTotalAttempted > 0 ? Math.round((updatedTotalCorrect / updatedTotalAttempted) * 100) : 0;
+
+      const today = new Date().toISOString().split('T')[0];
+      const { streak, bonusXp } = updateStreak(prev, today);
+
+      const updatedDailyActivity = { ...(prev.dailyActivity || {}) };
+      if (!updatedDailyActivity[today]) {
+        updatedDailyActivity[today] = { activities: 0, xp: 0, studyTime: 0 };
+      }
+      updatedDailyActivity[today].activities += 1;
+      updatedDailyActivity[today].xp += xpEarned + bonusXp;
+
+      const completedMockTests = prev.completedMockTests || {};
+      const isMockTestDone = !!completedMockTests[lessonId];
+      let completedLessons = [...prev.completedLessons];
+      if (isMockTestDone && !completedLessons.includes(lessonId)) {
+        completedLessons.push(lessonId);
+        xpEarned += 20; // +20 XP for Lesson Completed
+        updatedDailyActivity[today].xp += 20;
+      }
+
+      const updatedCalendar = { ...prev.activityCalendar, [today]: 2 };
 
       return {
         ...prev,
         quizScores: updatedScores,
+        totalCorrectAnswers: updatedTotalCorrect,
+        totalQuestionsAttempted: updatedTotalAttempted,
+        dailyActivity: updatedDailyActivity,
+        learningStreak: streak,
+        completedLessons,
+        activityCalendar: updatedCalendar,
+        xp: prev.xp + xpEarned + bonusXp,
         mastery: {
           ...prev.mastery,
           quiz: Math.min(100, Math.round(accuracy)),
         },
-        xp: prev.xp + 30, // +30 XP for taking quiz
       };
     });
   }, []);
@@ -251,6 +315,62 @@ export function ProgressProvider({ children }) {
         },
       },
     }));
+  }, []);
+
+  const completeCodingChallenge = useCallback((lessonId, index) => {
+    const challengeId = `${lessonId}_${index}`;
+    setProgress(prev => {
+      const completedChallenges = prev.completedChallenges || [];
+      if (completedChallenges.includes(challengeId)) return prev;
+
+      const xpEarned = 40; // Coding Challenge Completed → +40 XP
+      const today = new Date().toISOString().split('T')[0];
+      const { streak, bonusXp } = updateStreak(prev, today);
+      const updatedCalendar = { ...prev.activityCalendar, [today]: 2 };
+
+      const updatedDailyActivity = { ...(prev.dailyActivity || {}) };
+      if (!updatedDailyActivity[today]) {
+        updatedDailyActivity[today] = { activities: 0, xp: 0, studyTime: 0 };
+      }
+      updatedDailyActivity[today].activities += 1;
+      updatedDailyActivity[today].xp += xpEarned + bonusXp;
+
+      return {
+        ...prev,
+        completedChallenges: [...completedChallenges, challengeId],
+        learningStreak: streak,
+        activityCalendar: updatedCalendar,
+        dailyActivity: updatedDailyActivity,
+        xp: prev.xp + xpEarned + bonusXp,
+      };
+    });
+  }, []);
+
+  const incrementStudyTime = useCallback((seconds) => {
+    setProgress(prev => {
+      const updatedSeconds = (prev.totalStudyTimeSeconds || 0) + seconds;
+      const today = new Date().toISOString().split('T')[0];
+
+      const updatedDailyActivity = { ...(prev.dailyActivity || {}) };
+      if (!updatedDailyActivity[today]) {
+        updatedDailyActivity[today] = { activities: 0, xp: 0, studyTime: 0 };
+      }
+      updatedDailyActivity[today].studyTime += seconds;
+
+      return {
+        ...prev,
+        totalStudyTimeSeconds: updatedSeconds,
+        totalStudyTimeMinutes: Math.floor(updatedSeconds / 60),
+        dailyActivity: updatedDailyActivity
+      };
+    });
+  }, []);
+
+  const triggerSandboxRun = useCallback(() => {
+    setProgress(prev => {
+      if (prev.hasRunCode) return prev;
+      return { ...prev, hasRunCode: true };
+    });
   }, []);
 
   const isLessonComplete = useCallback((lessonId) => {
@@ -285,6 +405,9 @@ export function ProgressProvider({ children }) {
     startStreakJourney,
     completeDailyChallenge,
     submitMockTest,
+    completeCodingChallenge,
+    incrementStudyTime,
+    triggerSandboxRun,
   };
 
   return (

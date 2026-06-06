@@ -41,10 +41,10 @@ export default function FinalCTA() {
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link
               to="/learn"
-              className="group inline-flex items-center gap-2 rounded-pill bg-accent px-10 py-4 text-base font-medium text-white shadow-card transition-all hover:bg-accent-deep hover:shadow-elevated"
+              className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-accent to-amber-500 px-10 py-4 text-base font-medium text-white shadow-[0_4px_20px_rgba(249,115,22,0.25)] hover:shadow-[0_0_30px_rgba(249,115,22,0.45)] hover:scale-[1.03] active:scale-[0.98] transition-all duration-300 ease-out"
             >
               Start Learning — It&apos;s Free
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
             </Link>
           </div>
 

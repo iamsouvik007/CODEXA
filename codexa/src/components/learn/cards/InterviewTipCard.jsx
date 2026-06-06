@@ -6,14 +6,13 @@ import { scaleUp } from '../../../lib/animations';
 export default function InterviewTipCard({ section, index }) {
   const [revealed, setRevealed] = useState(false);
 
-  // Generate a realistic difficulty tag based on index
-  const difficulties = ['Easy', 'Medium', 'Hard'];
+  // Difficulty tags — all beginner-level JS fundamentals, so only Easy/Medium
+  const difficulties = ['Easy', 'Medium', 'Easy'];
   const difficulty = difficulties[index % 3];
   
   const difficultyColors = {
     'Easy': 'border-success/30 bg-success/10 text-success',
     'Medium': 'border-warning/30 bg-warning/10 text-warning',
-    'Hard': 'border-red-500/30 bg-red-500/10 text-red-400'
   };
 
   return (
