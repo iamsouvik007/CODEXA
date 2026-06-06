@@ -74,7 +74,7 @@ export default function WebDevTrack() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     return localStorage.getItem('codexa_sidebar_collapsed') === 'true';
   });
-  const [activeSelection, setActiveSelection] = useState({ type: 'lesson', id: lessonId || '3' });
+  const [activeSelection, setActiveSelection] = useState({ type: 'lesson', id: lessonId || '1' });
 
   // Persist sidebar collapsed state
   useEffect(() => {
@@ -121,7 +121,7 @@ export default function WebDevTrack() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const currentQuestions = rightPanelQuestions[activeSelection.id] || rightPanelQuestions['3'];
+  const currentQuestions = rightPanelQuestions[activeSelection.id] || rightPanelQuestions['1'];
 
   return (
     <div className="flex h-screen bg-[#08080a] overflow-hidden" style={{ '--sidebar-width': sidebarCollapsed ? '60px' : '280px' }}>

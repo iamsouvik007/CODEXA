@@ -37,6 +37,9 @@ export default function MarkdownRenderer({ tokens }) {
     let currentGroup = { headingToken: null, tokens: [] };
 
     tokens.forEach((token) => {
+      // Ignore H1 heading tokens to prevent redundant lesson titles in card content
+      if (token.type === 'heading' && token.depth === 1) return;
+
       // Ignore internal markdown comments meant for other components
       if (token.type === 'html' && token.raw.includes('<!-- QUIZ_START')) return;
       if (token.type === 'html' && token.raw.includes('<!-- REVISION_START')) return;
@@ -44,7 +47,8 @@ export default function MarkdownRenderer({ tokens }) {
       if (token.type === 'html' && token.raw.includes('REVISION_END -->')) return;
 
       if (token.type === 'heading' && (token.depth === 2 || token.depth === 3)) {
-        if (currentGroup.headingToken || currentGroup.tokens.length > 0) {
+        const hasContent = currentGroup.headingToken || currentGroup.tokens.some(t => t.raw && t.raw.trim() !== '');
+        if (hasContent) {
           parsedGroups.push(currentGroup);
         }
         currentGroup = { headingToken: token, tokens: [] };
@@ -53,7 +57,8 @@ export default function MarkdownRenderer({ tokens }) {
       }
     });
 
-    if (currentGroup.headingToken || currentGroup.tokens.length > 0) {
+    const hasContent = currentGroup.headingToken || currentGroup.tokens.some(t => t.raw && t.raw.trim() !== '');
+    if (hasContent) {
       parsedGroups.push(currentGroup);
     }
     

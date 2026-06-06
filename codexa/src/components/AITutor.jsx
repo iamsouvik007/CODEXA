@@ -173,7 +173,7 @@ export default function AITutor() {
   const dragStartRef = useRef({ x: 0, y: 0, posX: 0, posY: 0 });
   const resizeStartRef = useRef({ x: 0, y: 0, w: 0, h: 0 });
 
-  const activeLessonId = progress.currentLesson || '3';
+  const activeLessonId = progress.currentLesson || '1';
   const activeLesson = getLessonById(activeLessonId);
 
   // Quick Action configuration

@@ -11,7 +11,7 @@ const initialCodes = {
   '4': `// Modify the loop condition to repeat 5 times instead of 3!\nlet count = 0;\nwhile (count < 3) {\n  console.log("Iteration:", count);\n  count++;\n}`
 };
 
-export default function PracticeWorkspace({ lessonId = '3' }) {
+export default function PracticeWorkspace({ lessonId = '1' }) {
   const { triggerSandboxRun } = useProgress();
   const [code, setCode] = useState('');
   const [copied, setCopied] = useState(false);
@@ -21,7 +21,7 @@ export default function PracticeWorkspace({ lessonId = '3' }) {
   const [pythonAlert, setPythonAlert] = useState(false);
 
   useEffect(() => {
-    setCode(initialCodes[lessonId] || initialCodes['3']);
+    setCode(initialCodes[lessonId] || initialCodes['1']);
     setLogs([]);
   }, [lessonId]);
 
@@ -34,7 +34,7 @@ export default function PracticeWorkspace({ lessonId = '3' }) {
   }, [code]);
 
   const handleReset = useCallback(() => {
-    setCode(initialCodes[lessonId] || initialCodes['3']);
+    setCode(initialCodes[lessonId] || initialCodes['1']);
     setLogs([{ type: 'info', text: 'Editor code reset to initial state.' }]);
   }, [lessonId]);
 

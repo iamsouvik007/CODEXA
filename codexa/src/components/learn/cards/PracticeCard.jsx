@@ -44,7 +44,7 @@ export default function PracticeCard({ section, index }) {
     setChecked(true);
 
     if (correct) {
-      completeCodingChallenge(section.lessonId || "3", index);
+      completeCodingChallenge(section.lessonId || "1", index);
     } else {
       setShake(true);
       setTimeout(() => setShake(false), 500);
