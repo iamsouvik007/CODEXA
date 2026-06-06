@@ -1,266 +1,365 @@
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import {
   BookOpen, Lightbulb, Eye, Gamepad2, HelpCircle, Brain, Bot, Trophy,
-  ArrowRight, BookX, Video, BrainCircuit, RefreshCcw, Frown, Sparkles
+  BookX, Sparkles, Check, ChevronRight
 } from 'lucide-react';
 import { SectionLabel, SectionHeading, SectionDescription } from './Section';
-import { useScrollReveal, fadeUp, staggerContainer } from '../lib/animations';
+import { fadeUp, staggerContainer } from '../lib/animations';
 
 const steps = [
   {
+    step: '01',
     icon: BookOpen,
     title: 'Concept',
-    desc: 'Clear, structured explanation of the programming concept. No fluff — just what you need to understand.',
+    desc: 'Learn the core programming ideas with zero fluff.',
     color: 'text-accent',
     bg: 'bg-accent/10',
+    border: 'hover:border-accent/50',
+    glow: 'shadow-accent/5'
   },
   {
+    step: '02',
     icon: Lightbulb,
     title: 'Analogy',
-    desc: 'Every concept linked to something you already know. Closures become backpacks, arrays become playlists.',
+    desc: 'Relate abstract concepts to real-world objects.',
     color: 'text-warning',
     bg: 'bg-warning/10',
+    border: 'hover:border-warning/50',
+    glow: 'shadow-warning/5'
   },
   {
+    step: '03',
     icon: Eye,
     title: 'Visualize',
-    desc: 'Animated diagrams that show how data flows, how memory works, how functions execute — step by step.',
+    desc: 'Watch interactive data flow diagrams in real-time.',
     color: 'text-info',
     bg: 'bg-info/10',
+    border: 'hover:border-info/50',
+    glow: 'shadow-info/5'
   },
   {
+    step: '04',
     icon: Gamepad2,
     title: 'Interact',
-    desc: 'Hands-on interaction with the concept. Drag values, click through execution, see cause and effect.',
+    desc: 'Click and drag to run step-by-step visualizations.',
     color: 'text-[#a78bfa]',
     bg: 'bg-[#a78bfa]/10',
+    border: 'hover:border-[#a78bfa]/50',
+    glow: 'shadow-[#a78bfa]/5'
   },
   {
+    step: '05',
     icon: HelpCircle,
     title: 'Practice',
-    desc: 'Real coding challenges that test your understanding. Not syntax drills — conceptual challenges.',
+    desc: 'Write code to solve conceptual programming puzzles.',
     color: 'text-success',
     bg: 'bg-success/10',
+    border: 'hover:border-success/50',
+    glow: 'shadow-success/5'
   },
   {
+    step: '06',
     icon: Brain,
     title: 'Quiz',
-    desc: 'Targeted questions that reveal whether you truly understood or just memorized. Spaced repetition built in.',
+    desc: 'Test your recall with spaced repetition questions.',
     color: 'text-[#f472b6]',
     bg: 'bg-[#f472b6]/10',
+    border: 'hover:border-[#f472b6]/50',
+    glow: 'shadow-[#f472b6]/5'
   },
   {
+    step: '07',
     icon: Bot,
     title: 'AI Tutor',
-    desc: 'Stuck? Ask the AI mentor. It knows what lesson you\'re on and gives context-aware explanations.',
+    desc: 'Get context-aware explanations when you get stuck.',
     color: 'text-accent',
     bg: 'bg-accent/10',
+    border: 'hover:border-accent/50',
+    glow: 'shadow-accent/5'
   },
   {
+    step: '08',
     icon: Trophy,
     title: 'Mastery',
-    desc: 'Concept marked as mastered only when you\'ve demonstrated understanding through practice and recall.',
+    desc: 'Demonstrate deep understanding to unlock credentials.',
     color: 'text-warning',
     bg: 'bg-warning/10',
-  },
-];
-
-const traditionalFlow = [
-  { icon: BookX, label: 'Read Notes' },
-  { icon: Video, label: 'Watch Videos' },
-  { icon: BrainCircuit, label: 'Forget' },
-  { icon: Frown, label: 'Confused' },
-  { icon: RefreshCcw, label: 'Start Again' },
-];
-
-const codexaFlow = [
-  { icon: BookOpen, label: 'Learn' },
-  { icon: Eye, label: 'Visualize' },
-  { icon: Gamepad2, label: 'Practice' },
-  { icon: Brain, label: 'Quiz' },
-  { icon: Bot, label: 'AI Tutor' },
-  { icon: Trophy, label: 'Master' },
+    border: 'hover:border-warning/50',
+    glow: 'shadow-warning/5'
+  }
 ];
 
 export default function LearningMethod() {
   const { ref, controls } = useScrollReveal(0.08);
+  const shouldReduceMotion = useReducedMotion();
+
+  // Auto-play index and hover state variables
   const [activeStep, setActiveStep] = useState(0);
+  const [hoveredStep, setHoveredStep] = useState(null);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+
+  // Active step in focus is either hovered card or currently auto-playing step
+  const displayStep = hoveredStep !== null ? hoveredStep : activeStep;
+
+  useEffect(() => {
+    if (!isAutoPlaying) return;
+    const interval = setInterval(() => {
+      setActiveStep((prev) => (prev + 1) % 8);
+    }, 2800);
+    return () => clearInterval(interval);
+  }, [isAutoPlaying]);
+
+  // Desktop horizontal trace coordinates: runs from 6.25% to 93.75%
+  const totalSpan = 87.5;
+  const startOffset = 6.25;
+  const activeWidth = (displayStep / 7) * totalSpan;
+  const dotLeft = startOffset + activeWidth;
 
   return (
     <section ref={ref} id="learn" className="relative overflow-hidden bg-bg-soft py-24 sm:py-32">
+      {/* Soft atmospheric background glow */}
+      <div className="absolute top-1/4 left-1/2 h-[500px] w-[700px] -translate-x-1/2 rounded-full bg-accent/[0.015] blur-[120px] pointer-events-none" />
+
       <motion.div
         initial="hidden"
         animate={controls}
         variants={staggerContainer}
-        className="mx-auto max-w-[1200px] px-5 sm:px-8"
+        className="mx-auto max-w-[1400px] px-5 sm:px-8"
       >
-        {/* The Problem — visual comparison */}
-        <motion.div variants={fadeUp} className="mx-auto mb-20 max-w-5xl text-center sm:mb-28">
-          <SectionLabel>Why Codexa</SectionLabel>
-          <SectionHeading>Traditional learning is broken.</SectionHeading>
-          <SectionDescription className="mx-auto mb-12">
-            Reading docs and watching tutorials isn&apos;t enough. You forget 80% within 24 hours.
-            Codexa replaces passive consumption with an active learning pipeline.
+        {/* Header Block */}
+        <motion.div variants={fadeUp} className="mx-auto mb-16 max-w-3xl text-center">
+          <SectionLabel>Our Learning Engine</SectionLabel>
+          <SectionHeading>The Codexa Method.</SectionHeading>
+          <SectionDescription className="mx-auto">
+            Reading docs and watching videos isn&apos;t enough. We translate complex programming constructs into a living, visual roadmap.
           </SectionDescription>
+        </motion.div>
 
-          <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
-            {/* Traditional Flow */}
-            <div className="flex flex-col items-center rounded-2xl border border-border bg-bg-card p-8 shadow-sm">
-              <div className="mb-8 flex items-center justify-center gap-2">
-                <span className="font-heading text-lg font-semibold text-text-secondary">Traditional Learning</span>
-              </div>
-              <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4">
-                {traditionalFlow.map((step, i) => (
-                  <div key={i} className="flex items-center gap-2 sm:gap-4">
-                    <div className="flex flex-col items-center gap-2">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-bg-elevated text-text-muted transition-colors hover:bg-border">
-                        <step.icon className="h-5 w-5" aria-hidden="true" />
-                      </div>
-                      <span className="text-xs font-medium text-text-muted">{step.label}</span>
-                    </div>
-                    {i < traditionalFlow.length - 1 && (
-                      <ArrowRight className="h-4 w-4 text-border" aria-hidden="true" />
+        {/* 8-Stage Connected Pipeline Section */}
+        <motion.div variants={fadeUp} className="relative z-10 w-full mb-24">
+          
+          {/* Desktop Horizontal Connecting Path */}
+          <div className="absolute top-[68px] left-0 right-0 h-[2px] bg-border/40 hidden lg:block z-0">
+            {/* Glowing active path segment */}
+            <motion.div
+              className="absolute h-full bg-gradient-to-r from-accent to-accent-soft shadow-[0_0_8px_rgba(249,115,22,0.4)]"
+              initial={{ width: '0%' }}
+              animate={{ width: `${dotLeft}%` }}
+              transition={{ type: "spring", stiffness: 70, damping: 15 }}
+            />
+            {/* Desktop continuous moving glow dot */}
+            {!shouldReduceMotion && (
+              <motion.div
+                className="absolute h-3.5 w-3.5 -top-[6px] rounded-full bg-white shadow-[0_0_12px_rgba(249,115,22,0.9)] border-2 border-accent"
+                animate={{
+                  left: `${dotLeft}%`
+                }}
+                transition={{ type: "spring", stiffness: 70, damping: 15 }}
+                style={{ x: '-50%' }}
+              />
+            )}
+          </div>
+
+          {/* Mobile Vertical Connecting Path */}
+          <div className="absolute left-[36px] top-8 bottom-8 w-[2px] bg-border/30 lg:hidden z-0">
+            {/* Active vertical highlight */}
+            <motion.div
+              className="absolute w-full bg-gradient-to-b from-accent to-accent-soft shadow-[0_0_8px_rgba(249,115,22,0.4)]"
+              initial={{ height: '0%' }}
+              animate={{ height: `${(displayStep / 7) * 100}%` }}
+              transition={{ type: "spring", stiffness: 70, damping: 15 }}
+            />
+            {/* Mobile continuous moving glow dot */}
+            {!shouldReduceMotion && (
+              <motion.div
+                className="absolute w-3.5 h-3.5 -left-[6px] rounded-full bg-white shadow-[0_0_12px_rgba(249,115,22,0.9)] border-2 border-accent"
+                animate={{
+                  top: `${(displayStep / 7) * 100}%`
+                }}
+                transition={{ type: "spring", stiffness: 70, damping: 15 }}
+                style={{ y: '-50%' }}
+              />
+            )}
+          </div>
+
+          {/* Pipeline Cards Grid */}
+          <div className="relative z-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-8 lg:gap-3.5">
+            {steps.map((step, idx) => {
+              const Icon = step.icon;
+              const isActive = displayStep === idx;
+              const isCompleted = idx < displayStep;
+              
+              return (
+                <motion.div
+                  key={step.title}
+                  onMouseEnter={() => {
+                    setHoveredStep(idx);
+                    setIsAutoPlaying(false);
+                  }}
+                  onMouseLeave={() => {
+                    setHoveredStep(null);
+                    setIsAutoPlaying(true);
+                  }}
+                  whileHover={shouldReduceMotion ? {} : {
+                    scale: 1.03,
+                    y: -4
+                  }}
+                  className={`relative flex flex-row lg:flex-col items-center lg:items-start p-4 lg:p-5 rounded-xl border bg-bg-card/45 backdrop-blur-sm transition-all duration-300 pointer-events-auto select-none min-h-[90px] lg:min-h-[190px] ${
+                    isActive
+                      ? 'border-accent shadow-[0_0_24px_rgba(249,115,22,0.18)] bg-accent/[0.02]'
+                      : isCompleted
+                      ? 'border-accent/25 bg-bg-card/30'
+                      : 'border-border/60 bg-bg-card/10'
+                  }`}
+                >
+                  {/* Step Header info */}
+                  <div className="flex items-center justify-between w-full lg:mb-3.5 absolute lg:relative top-3 right-4 lg:top-0 lg:right-0">
+                    <span className={`font-mono text-[10px] font-semibold tracking-wider ${isActive ? 'text-accent' : 'text-text-muted/65'}`}>
+                      {step.step}
+                    </span>
+                    <span className={`text-[9px] font-semibold px-2 py-0.5 rounded-full border hidden lg:inline-block ${
+                      isActive
+                        ? 'bg-accent/10 text-accent border-accent/20 animate-pulse'
+                        : isCompleted
+                        ? 'bg-success/5 text-success/80 border-success/15'
+                        : 'bg-bg-elevated/40 text-text-muted/50 border-transparent'
+                    }`}>
+                      {isActive ? 'Active' : isCompleted ? 'Done' : 'Upcoming'}
+                    </span>
+                  </div>
+
+                  {/* Icon Wrapper */}
+                  <div className={`relative flex h-11 w-11 shrink-0 items-center justify-center rounded-lg mr-4 lg:mr-0 lg:mb-3.5 transition-all duration-300 ${
+                    isActive
+                      ? `${step.bg} ${step.color} shadow-[0_0_12px_rgba(249,115,22,0.3)] scale-105`
+                      : isCompleted
+                      ? 'bg-success/5 text-success/70'
+                      : 'bg-bg-elevated/30 text-text-muted'
+                  }`}>
+                    {isCompleted ? (
+                      <Check className="h-4.5 w-4.5" aria-hidden="true" />
+                    ) : (
+                      <Icon className="h-4.5 w-4.5" aria-hidden="true" />
+                    )}
+                    {isActive && (
+                      <span className="absolute -top-1 -right-1 flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75" />
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-accent" />
+                      </span>
                     )}
                   </div>
-                ))}
-              </div>
-              <div className="mt-8 flex w-full flex-col items-center border-t border-border pt-6">
-                <span className="text-sm font-medium text-text-muted">Result</span>
-                <span className="mt-1 font-heading text-xl font-semibold text-error">Frustration</span>
-              </div>
-            </div>
 
-            {/* Codexa Flow */}
-            <div className="relative flex flex-col items-center rounded-2xl border border-accent/30 bg-accent/[0.03] p-8 shadow-elevated">
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-b from-accent/5 to-transparent pointer-events-none" />
-              <div className="mb-8 flex items-center justify-center gap-2">
-                <Sparkles className="h-5 w-5 text-accent" />
-                <span className="font-heading text-lg font-semibold text-text">Codexa Learning</span>
-              </div>
-              <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4">
-                {codexaFlow.map((step, i) => (
-                  <div key={i} className="flex items-center gap-2 sm:gap-4">
-                    <div className="flex flex-col items-center gap-2">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-accent/10 text-accent transition-colors hover:bg-accent/20 shadow-sm shadow-accent/5">
-                        <step.icon className="h-5 w-5" aria-hidden="true" />
-                      </div>
-                      <span className="text-xs font-medium text-text">{step.label}</span>
-                    </div>
-                    {i < codexaFlow.length - 1 && (
-                      <ArrowRight className="h-4 w-4 text-accent/40" aria-hidden="true" />
-                    )}
+                  {/* Copy Details */}
+                  <div className="flex-1 lg:w-full text-left">
+                    <h4 className={`font-heading text-sm font-semibold tracking-tight mb-1 transition-colors ${isActive ? 'text-text' : 'text-text-secondary'}`}>
+                      {step.title}
+                    </h4>
+                    <p className="text-[11px] leading-relaxed text-text-muted/80 font-light max-w-[200px] lg:max-w-none pr-8 lg:pr-0">
+                      {step.desc}
+                    </p>
                   </div>
-                ))}
-              </div>
-              <div className="mt-8 flex w-full flex-col items-center border-t border-accent/20 pt-6">
-                <span className="text-sm font-medium text-accent/80">Result</span>
-                <span className="mt-1 font-heading text-xl font-semibold text-accent drop-shadow-sm">Real Understanding</span>
-              </div>
-            </div>
+                </motion.div>
+              );
+            })}
           </div>
         </motion.div>
 
-        {/* The Codexa Method — 8 steps */}
-        <motion.div variants={fadeUp}>
-          <div className="mb-10 text-center">
-            <h3 className="font-heading text-3xl font-semibold tracking-tight text-text sm:text-4xl">
-              The Codexa Method.
-            </h3>
-            <p className="mt-3 text-base text-text-secondary">
-              Every lesson follows the same proven learning flow.
-            </p>
+        {/* Side-by-Side Transformation Comparison Panel */}
+        <motion.div
+          variants={fadeUp}
+          className="mx-auto grid gap-8 md:grid-cols-2 max-w-4xl"
+        >
+          {/* Traditional Learning Panel */}
+          <div className="relative overflow-hidden rounded-xl border border-border/50 bg-bg-card/25 p-6 sm:p-8 shadow-sm">
+            <div className="flex items-center gap-2.5 mb-6 select-none">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-error/10 text-error">
+                <BookX className="h-4.5 w-4.5" aria-hidden="true" />
+              </div>
+              <h4 className="font-heading text-base font-semibold text-text-secondary">Traditional Learning</h4>
+            </div>
+            
+            <ul className="space-y-4">
+              {[
+                { label: 'Read Notes', desc: 'Sifting through long documents and textbooks.' },
+                { label: 'Passive Learning', desc: 'Watching endless tutorials without typing code.' },
+                { label: 'Forget Information', desc: '80% of concepts lost from memory in 24 hours.' },
+                { label: 'No Feedback', desc: 'Struggling blindly without knowing why code fails.' },
+                { label: 'No Guidance', desc: 'Getting stuck on syntax bugs with no help.' }
+              ].map((item, idx) => (
+                <li key={idx} className="flex items-start gap-3 text-sm text-text-muted text-left">
+                  <span className="text-error text-xs mt-1 shrink-0 select-none">❌</span>
+                  <div>
+                    <span className="font-medium text-text-secondary pr-1">{item.label}</span>
+                    <span className="font-light text-xs text-text-muted/80">({item.desc})</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+            
+            <div className="mt-10 pt-4 border-t border-border/30 flex items-center justify-between text-xs font-mono text-text-muted/60 select-none">
+              <span>OUTCOME</span>
+              <span className="text-error font-semibold uppercase tracking-wider">Frustration & Exhaustion</span>
+            </div>
           </div>
 
-          <div className="grid gap-8 lg:grid-cols-[320px_1fr] lg:gap-16">
-            {/* Step selector */}
-            <div className="flex gap-2 overflow-x-auto pb-4 lg:flex-col lg:overflow-visible lg:pb-0 scrollbar-hide">
-              {steps.map((step, i) => (
-                <button
-                  key={step.title}
-                  onClick={() => setActiveStep(i)}
-                  className={`group relative flex shrink-0 items-center gap-4 rounded-xl px-4 py-3.5 text-left transition-all duration-300 lg:w-full ${
-                    activeStep === i
-                      ? 'bg-bg-card shadow-sm'
-                      : 'hover:bg-bg-card/50'
-                  }`}
-                >
-                  {activeStep === i && (
-                    <motion.div
-                      layoutId="active-step-border"
-                      className="absolute inset-0 rounded-xl border border-border"
-                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                    />
-                  )}
-                  {activeStep === i && (
-                    <div className="absolute left-0 top-1/2 h-1/2 w-1 -translate-y-1/2 rounded-r-full bg-accent lg:block hidden" />
-                  )}
-                  <div className={`relative flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-colors duration-300 ${
-                    activeStep === i ? step.bg : 'bg-bg-elevated'
-                  }`}>
-                    <step.icon className={`h-4.5 w-4.5 transition-colors duration-300 ${
-                      activeStep === i ? step.color : 'text-text-muted group-hover:text-text-secondary'
-                    }`} aria-hidden="true" />
-                  </div>
-                  <div>
-                    <div className={`text-xs font-mono font-medium mb-0.5 transition-colors duration-300 ${
-                      activeStep === i ? step.color : 'text-text-muted/60'
-                    }`}>
-                      STEP {i + 1}
-                    </div>
-                    <span className={`whitespace-nowrap text-sm font-semibold transition-colors duration-300 ${
-                      activeStep === i ? 'text-text' : 'text-text-secondary group-hover:text-text'
-                    }`}>{step.title}</span>
-                  </div>
-                </button>
-              ))}
+          {/* Codexa Method Panel */}
+          <div className="relative overflow-hidden rounded-xl border border-accent/30 bg-accent/[0.005] p-6 sm:p-8 shadow-elevated">
+            {/* Inner background gradient */}
+            <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-accent/[0.02] to-transparent pointer-events-none" />
+            
+            <div className="flex items-center gap-2.5 mb-6 select-none">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent/15 text-accent shadow-sm shadow-accent/15">
+                <Sparkles className="h-4.5 w-4.5" aria-hidden="true" />
+              </div>
+              <h4 className="font-heading text-base font-semibold text-text">The Codexa Method</h4>
             </div>
-
-            {/* Active step detail */}
-            <div className="relative">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={activeStep}
-                  initial={{ opacity: 0, scale: 0.98, filter: 'blur(4px)' }}
-                  animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
-                  exit={{ opacity: 0, scale: 0.98, filter: 'blur(4px)' }}
-                  transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
-                  className="flex h-full min-h-[360px] flex-col justify-center rounded-2xl border border-border bg-bg-card p-8 sm:p-12 lg:p-16 shadow-elevated relative overflow-hidden"
-                >
-                  {/* Subtle background glow */}
-                  <div className={`absolute top-0 right-0 h-64 w-64 rounded-full blur-[80px] opacity-20 pointer-events-none -translate-y-1/2 translate-x-1/3 ${steps[activeStep].bg}`} />
-
-                  <div className={`mb-6 flex h-16 w-16 items-center justify-center rounded-2xl shadow-sm ${steps[activeStep].bg}`}>
-                    {(() => {
-                      const Icon = steps[activeStep].icon;
-                      return <Icon className={`h-8 w-8 ${steps[activeStep].color}`} aria-hidden="true" />;
-                    })()}
+            
+            <ul className="space-y-4">
+              {[
+                { label: 'Understand', desc: 'Clear, concise concept breakdowns.' },
+                { label: 'Visualize', desc: 'Interactive visual structures of data.' },
+                { label: 'Interact', desc: 'Click and drag to run execution paths.' },
+                { label: 'Practice', desc: 'Solve conceptual programming puzzles.' },
+                { label: 'Quiz', desc: 'Spaced repetition reinforces retention.' },
+                { label: 'AI Guidance', desc: 'Contextual tutor checks your editor.' },
+                { label: 'Master', desc: 'Achieve demonstrable engineering recall.' }
+              ].map((item, idx) => (
+                <li key={idx} className="flex items-start gap-3 text-sm text-text-secondary text-left">
+                  <span className="text-success text-xs mt-1 shrink-0 select-none">✅</span>
+                  <div>
+                    <span className="font-semibold text-text pr-1">{item.label}</span>
+                    <span className="font-light text-xs text-text-muted/90">({item.desc})</span>
                   </div>
-                  <h3 className="font-heading mb-4 text-2xl font-bold tracking-tight text-text sm:text-3xl lg:text-4xl">
-                    {steps[activeStep].title}
-                  </h3>
-                  <p className="max-w-xl text-base leading-relaxed text-text-secondary sm:text-lg">
-                    {steps[activeStep].desc}
-                  </p>
-                  
-                  {/* Progress Indicators */}
-                  <div className="mt-10 flex items-center gap-2">
-                    {steps.map((_, i) => (
-                      <div
-                        key={i}
-                        className={`h-1.5 rounded-full transition-all duration-500 ${
-                          i === activeStep ? 'w-8 bg-accent' : 
-                          i < activeStep ? 'w-2 bg-accent/30' : 'w-2 bg-border'
-                        }`}
-                      />
-                    ))}
-                  </div>
-                </motion.div>
-              </AnimatePresence>
+                </li>
+              ))}
+            </ul>
+            
+            <div className="mt-10 pt-4 border-t border-accent/15 flex items-center justify-between text-xs font-mono text-accent/80 select-none">
+              <span>OUTCOME</span>
+              <span className="text-accent font-semibold uppercase tracking-wider">Engineering Mastery</span>
             </div>
           </div>
         </motion.div>
       </motion.div>
     </section>
   );
+}
+
+// ─── Local custom scroll reveal hook ───
+import { useRef, useEffect as useReactEffect } from 'react';
+import { useInView, useAnimation } from 'framer-motion';
+
+function useScrollReveal(threshold = 0.1) {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, amount: threshold });
+  const controls = useAnimation();
+
+  useReactEffect(() => {
+    if (isInView) {
+      controls.start('visible');
+    }
+  }, [isInView, controls]);
+
+  return { ref, controls, isInView };
 }
