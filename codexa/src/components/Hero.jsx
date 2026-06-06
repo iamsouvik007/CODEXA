@@ -246,70 +246,66 @@ export default function Hero() {
           </div>
 
           {/* Masked Revealed Color Syntax Layer (Visible only under hover spotlight) */}
-          {!shouldReduceMotion && (
-            <motion.div
-              className="absolute inset-0 select-none pointer-events-none"
-              animate={{
-                opacity: isHovered ? 1 : 0
-              }}
-              transition={{ duration: 0.25 }}
-              style={{
-                maskImage: 'radial-gradient(280px circle at var(--mouse-x, -1000px) var(--mouse-y, -1000px), black 0%, transparent 100%)',
-                WebkitMaskImage: 'radial-gradient(280px circle at var(--mouse-x, -1000px) var(--mouse-y, -1000px), black 0%, transparent 100%)',
-              }}
-            >
-              {developerKeywords.map((kw, i) => (
-                <div
-                  key={`kw-fg-${i}`}
-                  className={`absolute font-mono font-semibold ${kw.color} whitespace-nowrap drop-shadow-[0_0_6px_rgba(255,255,255,0.1)] select-none ${kw.fontSize}`}
-                  style={{ top: kw.top, left: kw.left }}
-                >
-                  {kw.text}
-                </div>
-              ))}
-              {codeSnippets.map((cs, i) => (
-                <div
-                  key={`cs-fg-${i}`}
-                  className={`absolute font-mono font-medium whitespace-nowrap select-none ${cs.fontSize}`}
-                  style={{ top: cs.top, left: cs.left }}
-                >
-                  {cs.tokens.map((t, idx) => (
-                    <span key={idx} className={t.color}>{t.text}</span>
-                  ))}
-                </div>
-              ))}
-              {floatingSymbols.map((sym, i) => (
-                <div
-                  key={`sym-fg-${i}`}
-                  className={`absolute font-mono font-bold ${sym.color} whitespace-nowrap drop-shadow-[0_0_8px_rgba(255,255,255,0.15)] select-none ${sym.fontSize}`}
-                  style={{ top: sym.top, left: sym.left }}
-                >
-                  {sym.text}
-                </div>
-              ))}
-            </motion.div>
-          )}
-        </motion.div>
-
-        {/* Layer 5: Cursor Spotlight Layer (GPU-accelerated warm background radial glow light) */}
-        {!shouldReduceMotion && (
           <motion.div
-            className="absolute rounded-full pointer-events-none z-[3] mix-blend-screen"
+            className="absolute inset-0 select-none pointer-events-none"
             animate={{
               opacity: isHovered ? 1 : 0
             }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.25 }}
             style={{
-              left: 0,
-              top: 0,
-              width: '550px',
-              height: '550px',
-              background: 'radial-gradient(circle, rgba(253, 186, 116, 0.16) 0%, rgba(249, 115, 22, 0.04) 40%, transparent 70%)',
-              transform: 'translate3d(var(--mouse-x, -1000px), var(--mouse-y, -1000px), 0) translate(-50%, -50%)',
+              maskImage: 'radial-gradient(280px circle at var(--mouse-x, -1000px) var(--mouse-y, -1000px), black 0%, transparent 100%)',
+              WebkitMaskImage: 'radial-gradient(280px circle at var(--mouse-x, -1000px) var(--mouse-y, -1000px), black 0%, transparent 100%)',
             }}
-            aria-hidden="true"
-          />
-        )}
+          >
+            {developerKeywords.map((kw, i) => (
+              <div
+                key={`kw-fg-${i}`}
+                className={`absolute font-mono font-semibold ${kw.color} whitespace-nowrap drop-shadow-[0_0_6px_rgba(255,255,255,0.1)] select-none ${kw.fontSize}`}
+                style={{ top: kw.top, left: kw.left }}
+              >
+                {kw.text}
+              </div>
+            ))}
+            {codeSnippets.map((cs, i) => (
+              <div
+                key={`cs-fg-${i}`}
+                className={`absolute font-mono font-medium whitespace-nowrap select-none ${cs.fontSize}`}
+                style={{ top: cs.top, left: cs.left }}
+              >
+                {cs.tokens.map((t, idx) => (
+                  <span key={idx} className={t.color}>{t.text}</span>
+                ))}
+              </div>
+            ))}
+            {floatingSymbols.map((sym, i) => (
+              <div
+                key={`sym-fg-${i}`}
+                className={`absolute font-mono font-bold ${sym.color} whitespace-nowrap drop-shadow-[0_0_8px_rgba(255,255,255,0.15)] select-none ${sym.fontSize}`}
+                style={{ top: sym.top, left: sym.left }}
+              >
+                {sym.text}
+              </div>
+            ))}
+          </motion.div>
+        </motion.div>
+
+        {/* Layer 5: Cursor Spotlight Layer (GPU-accelerated warm background radial glow light) */}
+        <motion.div
+          className="absolute rounded-full pointer-events-none z-[3] mix-blend-screen"
+          animate={{
+            opacity: isHovered ? 1 : 0
+          }}
+          transition={{ duration: 0.3 }}
+          style={{
+            left: 0,
+            top: 0,
+            width: '550px',
+            height: '550px',
+            background: 'radial-gradient(circle, rgba(253, 186, 116, 0.16) 0%, rgba(249, 115, 22, 0.04) 40%, transparent 70%)',
+            transform: 'translate3d(var(--mouse-x, -1000px), var(--mouse-y, -1000px), 0) translate(-50%, -50%)',
+          }}
+          aria-hidden="true"
+        />
 
         {/* Floating micro node connection lines */}
         {!shouldReduceMotion && (
