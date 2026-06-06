@@ -7,14 +7,88 @@ export const curriculum = {
   id: 'web-development',
   title: 'Web Development',
   description: 'Master JavaScript from fundamentals to advanced concepts.',
-  modules: [
+  tracks: [
     {
-      id: '1',
-      title: 'JavaScript Foundations',
-      description: 'Understand the origins, environment, and purpose of JavaScript.',
-      lessons: ['1', '2', '3', '4'],
+      id: 'html',
+      title: 'HTML',
+      status: 'coming-soon',
+      modules: [
+        {
+          id: 'html-fundamentals',
+          title: 'HTML Foundations',
+          status: 'coming-soon',
+          lessons: []
+        }
+      ]
     },
-  ],
+    {
+      id: 'css',
+      title: 'CSS',
+      status: 'coming-soon',
+      modules: [
+        {
+          id: 'css-fundamentals',
+          title: 'CSS Foundations',
+          status: 'coming-soon',
+          lessons: []
+        }
+      ]
+    },
+    {
+      id: 'javascript',
+      title: 'JavaScript',
+      status: 'active',
+      modules: [
+        {
+          id: 'fundamentals',
+          title: 'Fundamentals',
+          lessons: ['1', '2', '3', '4'],
+        },
+        {
+          id: 'functions',
+          title: 'Functions',
+          status: 'coming-soon',
+          lessons: []
+        },
+        {
+          id: 'arrays',
+          title: 'Arrays',
+          status: 'coming-soon',
+          lessons: []
+        },
+        {
+          id: 'objects',
+          title: 'Objects',
+          status: 'coming-soon',
+          lessons: []
+        },
+        {
+          id: 'dom',
+          title: 'DOM',
+          status: 'coming-soon',
+          lessons: []
+        },
+        {
+          id: 'async',
+          title: 'Async JavaScript',
+          status: 'coming-soon',
+          lessons: []
+        },
+        {
+          id: 'es6',
+          title: 'ES6+',
+          status: 'coming-soon',
+          lessons: []
+        },
+        {
+          id: 'projects',
+          title: 'Projects',
+          status: 'coming-soon',
+          lessons: []
+        }
+      ]
+    }
+  ]
 };
 
 /**

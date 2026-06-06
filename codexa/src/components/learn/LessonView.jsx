@@ -13,6 +13,9 @@ import InterviewTipCard from './cards/InterviewTipCard';
 import SummaryCard from './cards/SummaryCard';
 import DataTable from './cards/DataTable';
 import InsightCard from './cards/InsightCard';
+import VisualExplanationCard from './cards/VisualExplanationCard';
+import LearningResourcesCard from './cards/LearningResourcesCard';
+import PracticeCard from './cards/PracticeCard';
 import QuizEngine from './quiz/QuizEngine';
 import RevisionMode from './RevisionMode';
 
@@ -25,6 +28,9 @@ const cardComponents = {
   'interview-tip': InterviewTipCard,
   summary: SummaryCard,
   insight: InsightCard,
+  visual: VisualExplanationCard,
+  resources: LearningResourcesCard,
+  practice: PracticeCard,
 };
 
 export default function LessonView({ lesson, onOpenModal }) {

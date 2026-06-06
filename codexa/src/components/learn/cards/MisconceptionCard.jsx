@@ -7,11 +7,11 @@ export default function MisconceptionCard({ section, index }) {
       initial={{ opacity: 0, y: 12 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.15 }}
-      className="overflow-hidden rounded-xl border border-red-500/20 bg-bg-card shadow-card"
+      className="overflow-hidden rounded-xl border border-red-500/15 bg-[#0e0809] shadow-card hover:border-red-500/25 transition-all"
     >
-      <div className="flex items-center gap-2 border-b border-border px-6 py-3">
+      <div className="flex items-center gap-2 border-b border-border/50 px-6 py-3 bg-red-950/10">
         <XCircle className="h-4 w-4 text-red-400" />
-        <span className="text-[10px] font-semibold uppercase tracking-wider text-red-400">Common Misconception</span>
+        <span className="text-[10px] font-bold uppercase tracking-wider text-red-400">Common Misconception</span>
       </div>
       <div className="p-6">
         {section.heading && (

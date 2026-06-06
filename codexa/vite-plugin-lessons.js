@@ -17,6 +17,9 @@ function classifySection(heading, content) {
   if (/interview|tip/i.test(h) && !/template/i.test(h)) return 'interview-tip';
   if (/summary|takeaway|key point|one-sentence/i.test(h)) return 'summary';
   if (/analogy|imagine|think of it|like a/i.test(h)) return 'analogy';
+  if (/visual|explanation|diagram/i.test(h)) return 'visual';
+  if (/resource|link/i.test(h)) return 'resources';
+  if (/practice|exercise/i.test(h)) return 'practice';
 
   // Check content patterns
   if (/imagine you|think of it as|it['']s like|analogy/i.test(c.slice(0, 200))) return 'analogy';
@@ -254,6 +257,26 @@ function parseLesson(filePath, moduleId) {
   const allCodeBlocks = extractCodeBlocks(raw);
   const plainText = raw.replace(/```[\s\S]*?```/g, '').replace(/[#*`\[\]()]/g, '');
 
+  let customQuiz = null;
+  const quizMatch = raw.match(/<!-- QUIZ_START([\s\S]*?)QUIZ_END -->/);
+  if (quizMatch) {
+    try {
+      customQuiz = JSON.parse(quizMatch[1].trim());
+    } catch (e) {
+      console.warn("Failed to parse custom quiz:", e.message);
+    }
+  }
+
+  let customRevision = null;
+  const revMatch = raw.match(/<!-- REVISION_START([\s\S]*?)REVISION_END -->/);
+  if (revMatch) {
+    try {
+      customRevision = JSON.parse(revMatch[1].trim());
+    } catch (e) {
+      console.warn("Failed to parse custom revision:", e.message);
+    }
+  }
+
   return {
     id: moduleId,
     moduleId,
@@ -266,8 +289,8 @@ function parseLesson(filePath, moduleId) {
       codeBlockCount: allCodeBlocks.length,
       totalWords: plainText.split(/\s+/).filter(Boolean).length,
     },
-    quiz: generateQuizzes(sections, allCodeBlocks, title),
-    revisionCards: generateRevisionCards(sections),
+    quiz: customQuiz || generateQuizzes(sections, allCodeBlocks, title),
+    revisionCards: customRevision || generateRevisionCards(sections),
   };
 }
 
