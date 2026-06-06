@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Sparkles, ChevronDown, Video, FileText, MessageSquare } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAITutor } from '../lib/AITutorContext';
 
 export default function Navbar({ onOpenModal }) {
@@ -9,6 +10,8 @@ export default function Navbar({ onOpenModal }) {
   const [activeDropdown, setActiveDropdown] = useState(null);
   const dropdownTimeoutRef = useRef(null);
   const aiTutor = useAITutor();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -41,8 +44,11 @@ export default function Navbar({ onOpenModal }) {
         target.scrollIntoView({ behavior: 'smooth' });
       }
       setMobileOpen(false);
+    } else if (link.href && link.href.startsWith('/')) {
+      e.preventDefault();
+      navigate(link.href);
+      setMobileOpen(false);
     } else {
-      // Allow default navigation for /learn or absolute paths
       setMobileOpen(false);
     }
   };

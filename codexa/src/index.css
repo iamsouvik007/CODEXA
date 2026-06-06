@@ -166,3 +166,222 @@
     opacity: 0;
   }
 }
+
+/* ─── Prose styles for lesson content ─── */
+.prose-codexa {
+  h1, h2, h3, h4, h5, h6 {
+    color: var(--color-text);
+    font-family: var(--font-heading);
+    font-weight: 600;
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+    letter-spacing: -0.02em;
+  }
+  h2 { font-size: 1.25rem; }
+  h3 { font-size: 1.125rem; }
+
+  p {
+    margin-bottom: 0.75em;
+    line-height: 1.75;
+  }
+
+  strong {
+    color: var(--color-text);
+    font-weight: 600;
+  }
+
+  em {
+    color: var(--color-text-secondary);
+  }
+
+  a {
+    color: var(--color-info);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  ul, ol {
+    margin: 0.5em 0 1em 1.25em;
+  }
+
+  li {
+    margin-bottom: 0.35em;
+    line-height: 1.7;
+  }
+
+  ul > li {
+    list-style-type: disc;
+  }
+
+  ol > li {
+    list-style-type: decimal;
+  }
+
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    background: rgba(255, 255, 255, 0.06);
+    padding: 0.15em 0.4em;
+    border-radius: 4px;
+    color: var(--color-accent-soft);
+  }
+
+  pre {
+    background: #0d0d11;
+    border-radius: 8px;
+    padding: 1em;
+    overflow-x: auto;
+    margin: 0.75em 0;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  pre code {
+    background: none;
+    padding: 0;
+    color: #d4d4d8;
+    font-size: inherit;
+  }
+
+  blockquote {
+    border-left: 3px solid var(--color-accent);
+    padding-left: 1em;
+    margin: 1em 0;
+    color: var(--color-text-secondary);
+    font-style: italic;
+  }
+
+  hr {
+    border: none;
+    border-top: 1px solid var(--color-border);
+    margin: 1.5em 0;
+  }
+
+  img {
+    max-width: 100%;
+    border-radius: 8px;
+  }
+}
+
+/* ─── Data table styles ─── */
+.data-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.data-table thead th {
+  background: rgba(255, 255, 255, 0.04);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+  text-align: left;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.data-table tbody td {
+  padding: 10px 16px;
+  color: var(--color-text-secondary);
+  border-bottom: 1px solid var(--color-border-soft);
+  line-height: 1.5;
+}
+
+.data-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.data-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.data-table code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 2px 5px;
+  border-radius: 3px;
+  color: var(--color-accent-soft);
+}
+
+/* ─── Highlight.js dark theme (adapted) ─── */
+.hljs {
+  color: #d4d4d8;
+}
+
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-literal,
+.hljs-section,
+.hljs-link {
+  color: #c084fc;
+}
+
+.hljs-function .hljs-keyword {
+  color: #c084fc;
+}
+
+.hljs-string,
+.hljs-title.function_,
+.hljs-title.class_ {
+  color: #86efac;
+}
+
+.hljs-attr,
+.hljs-attribute,
+.hljs-variable,
+.hljs-template-variable,
+.hljs-class .hljs-title,
+.hljs-type {
+  color: #93c5fd;
+}
+
+.hljs-number,
+.hljs-symbol,
+.hljs-bullet {
+  color: #fbbf24;
+}
+
+.hljs-comment,
+.hljs-quote,
+.hljs-doctag {
+  color: #6b7280;
+  font-style: italic;
+}
+
+.hljs-meta,
+.hljs-meta .hljs-keyword,
+.hljs-tag {
+  color: #f87171;
+}
+
+.hljs-built_in,
+.hljs-title {
+  color: #67e8f9;
+}
+
+.hljs-params {
+  color: #d4d4d8;
+}
+
+.hljs-subst {
+  color: #d4d4d8;
+}
+
+.hljs-regexp {
+  color: #fca5a5;
+}
+
+.hljs-addition {
+  color: #86efac;
+  background: rgba(34, 197, 94, 0.1);
+}
+
+.hljs-deletion {
+  color: #fca5a5;
+  background: rgba(239, 68, 68, 0.1);
+}
