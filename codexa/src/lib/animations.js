@@ -141,39 +141,39 @@ export function useTypingEffect(text, speed = 30, startDelay = 0, enabled = true
 export function useWordCycler(words, typingSpeed = 80, erasingSpeed = 40, displayDuration = 2500) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [displayed, setDisplayed] = useState('');
-  const [isTyping, setIsTyping] = useState(true);
+  const [status, setStatus] = useState('typing'); // 'typing' | 'waiting' | 'erasing'
 
   useEffect(() => {
     let timeout;
     const currentWord = words[currentIndex];
 
-    if (isTyping) {
+    if (status === 'typing') {
       if (displayed.length < currentWord.length) {
         timeout = setTimeout(() => {
           setDisplayed(currentWord.slice(0, displayed.length + 1));
         }, typingSpeed);
       } else {
-        // Word fully typed — wait then start erasing
-        timeout = setTimeout(() => {
-          setIsTyping(false);
-        }, displayDuration);
+        setStatus('waiting');
       }
-    } else {
+    } else if (status === 'waiting') {
+      timeout = setTimeout(() => {
+        setStatus('erasing');
+      }, displayDuration);
+    } else if (status === 'erasing') {
       if (displayed.length > 0) {
         timeout = setTimeout(() => {
           setDisplayed(displayed.slice(0, -1));
         }, erasingSpeed);
       } else {
-        // Word fully erased — move to next
+        setStatus('typing');
         setCurrentIndex((prev) => (prev + 1) % words.length);
-        setIsTyping(true);
       }
     }
 
     return () => clearTimeout(timeout);
-  }, [displayed, isTyping, currentIndex, words, typingSpeed, erasingSpeed, displayDuration]);
+  }, [displayed, status, currentIndex, words, typingSpeed, erasingSpeed, displayDuration]);
 
-  return { displayed, currentIndex, isTyping };
+  return { displayed, currentIndex, isTyping: status === 'typing', status };
 }
 
 /**

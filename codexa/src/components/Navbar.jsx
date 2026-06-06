@@ -39,9 +39,26 @@ export default function Navbar({ onOpenModal }) {
       setMobileOpen(false);
     } else if (link.href && link.href.startsWith('#')) {
       e.preventDefault();
-      const target = document.querySelector(link.href);
-      if (target) {
-        target.scrollIntoView({ behavior: 'smooth' });
+      if (location.pathname === '/') {
+        const target = document.querySelector(link.href);
+        if (target) {
+          const offset = 80;
+          if (window.lenis) {
+            window.lenis.scrollTo(target, { offset: -offset, duration: 1.2 });
+          } else {
+            const bodyRect = document.body.getBoundingClientRect().top;
+            const elementRect = target.getBoundingClientRect().top;
+            const elementPosition = elementRect - bodyRect;
+            const offsetPosition = elementPosition - offset;
+
+            window.scrollTo({
+              top: offsetPosition,
+              behavior: 'smooth'
+            });
+          }
+        }
+      } else {
+        navigate('/', { state: { scrollToHash: link.href } });
       }
       setMobileOpen(false);
     } else if (link.href && link.href.startsWith('/')) {
@@ -73,7 +90,7 @@ export default function Navbar({ onOpenModal }) {
 
   const secondaryNavLinks = [
     { label: 'Premium', href: '#trusted-providers' },
-    { label: 'About', href: '#vision' },
+    { label: 'About', href: '#demo' },
   ];
 
   const interviewItems = [
@@ -96,9 +113,7 @@ export default function Navbar({ onOpenModal }) {
         <nav className="mx-auto flex h-16 max-w-[1200px] items-center justify-between px-5 sm:px-8" aria-label="Main navigation">
           {/* Logo */}
           <a href="#main-content" onClick={(e) => handleNavClick(e, { href: '#main-content' })} className="flex items-center gap-2.5 text-text" aria-label="Codexa home">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent">
-              <Sparkles className="h-4 w-4 text-white" aria-hidden="true" />
-            </div>
+            <img src="/favicon-32x32.png" alt="Codexa Logo" className="h-8 w-8 rounded-lg" />
             <span className="font-heading text-lg font-semibold tracking-tight">Codexa</span>
           </a>
 

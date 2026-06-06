@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Search, ChevronDown, ChevronRight, Lock, BookOpen, Bookmark, CheckCircle2, CircleDot, Circle } from 'lucide-react';
 import { useProgress } from '../../lib/ProgressContext';
 
-export default function LessonSidebar({ activeLessonId, onSelect, activeSelection }) {
+export default function LessonSidebar({ activeLessonId, onSelect, activeSelection, isCollapsed = false, onToggleCollapse }) {
   const [searchQuery, setSearchQuery] = useState('');
   
   // Expanded states for folders
@@ -47,10 +47,10 @@ export default function LessonSidebar({ activeLessonId, onSelect, activeSelectio
           title: 'Fundamentals',
           status: 'active',
           lessons: [
-            { id: '1', title: 'Lecture 01 - Introduction to JavaScript', duration: '12m', difficulty: 'beginner' },
-            { id: '2', title: 'Lecture 02 - Variables & Data Types', duration: '15m', difficulty: 'beginner' },
-            { id: '3', title: 'Lecture 03 - Operators & Expressions', duration: '20m', difficulty: 'intermediate' },
-            { id: '4', title: 'Lecture 04 - Control Flow & Loops', duration: '25m', difficulty: 'intermediate' }
+            { id: '1', title: 'Lecture 01 - Introduction to JavaScript', difficulty: 'beginner' },
+            { id: '2', title: 'Lecture 02 - Variables & Data Types', difficulty: 'beginner' },
+            { id: '3', title: 'Lecture 03 - Operators & Expressions', difficulty: 'intermediate' },
+            { id: '4', title: 'Lecture 04 - Control Flow & Loops', difficulty: 'intermediate' }
           ]
         },
         { id: 'functions', title: 'Functions', status: 'coming-soon', lessons: [] },
@@ -96,8 +96,117 @@ export default function LessonSidebar({ activeLessonId, onSelect, activeSelectio
     }
   };
 
+  if (isCollapsed) {
+    return (
+      <div className="flex h-screen flex-col bg-[#0a0a0c] w-[60px] items-center py-4 select-none">
+        
+        {/* Compact Progress Section */}
+        <div className="group relative flex flex-col items-center justify-center pb-4 border-b border-border/30 bg-bg-soft/40 w-full mb-3">
+          <div className="relative flex h-10 w-10 items-center justify-center">
+            {/* SVG Progress Circle */}
+            <svg className="absolute inset-0 h-full w-full -rotate-90">
+              <circle cx="20" cy="20" r="14" className="stroke-bg-elevated fill-none" strokeWidth="2.5" />
+              <circle
+                cx="20"
+                cy="20"
+                r="14"
+                className="stroke-accent fill-none"
+                strokeWidth="2.5"
+                strokeDasharray={2 * Math.PI * 14}
+                strokeDashoffset={2 * Math.PI * 14 - (progressPct / 100) * (2 * Math.PI * 14)}
+                strokeLinecap="round"
+              />
+            </svg>
+            <span className="text-sm">🔥</span>
+          </div>
+          {/* Tooltip */}
+          <span className="pointer-events-none absolute left-14 top-1/2 -translate-y-1/2 z-50 rounded bg-[#0c0c0e] border border-border px-3 py-2 text-xs text-text opacity-0 transition-opacity duration-200 group-hover:opacity-100 whitespace-nowrap shadow-elevated">
+            <div className="font-bold text-accent">{progressPct}% Complete</div>
+            <div className="text-[10px] text-text-muted mt-0.5">{completedCount} / {totalLessons} Lessons</div>
+            {progress.learningStreak?.currentStreak > 0 && (
+              <div className="text-[10px] text-amber-500 mt-0.5 font-mono font-medium">🔥 {progress.learningStreak.currentStreak} Day Streak</div>
+            )}
+          </span>
+        </div>
+
+        {/* Search Icon (expands sidebar) */}
+        <button
+          onClick={onToggleCollapse}
+          className="group relative flex h-9 w-9 items-center justify-center rounded-lg text-text-muted hover:bg-bg-card hover:text-text transition-colors mb-4 cursor-pointer"
+        >
+          <Search className="h-4 w-4" />
+          <span className="pointer-events-none absolute left-14 top-1/2 -translate-y-1/2 z-50 rounded bg-[#0c0c0e] border border-border px-2.5 py-1.5 text-xs text-text opacity-0 transition-opacity duration-200 group-hover:opacity-100 whitespace-nowrap shadow-elevated">
+            Search Lessons (Ctrl + B)
+          </span>
+        </button>
+
+        {/* Vertical Icon Navigation List */}
+        <nav className="flex-1 w-full flex flex-col items-center gap-2 px-2 overflow-y-auto scrollbar-none" aria-label="Course explorer collapsed" data-lenis-prevent>
+          {curriculumTree.map((track) => {
+            const isComingSoon = track.status === 'coming-soon';
+            
+            if (isComingSoon) {
+              return (
+                <button
+                  key={track.id}
+                  onClick={() => onSelect({ type: 'locked', name: `${track.title} Track` })}
+                  className="group relative flex h-9 w-9 items-center justify-center rounded-lg text-text-muted hover:bg-bg-card hover:text-text transition-colors cursor-pointer"
+                >
+                  <Lock className="h-4 w-4" />
+                  <span className="pointer-events-none absolute left-14 top-1/2 -translate-y-1/2 z-50 rounded bg-[#0c0c0e] border border-border px-3 py-2 text-xs text-text opacity-0 transition-opacity duration-200 group-hover:opacity-100 whitespace-nowrap shadow-elevated flex flex-col gap-0.5">
+                    <div className="font-semibold text-text">{track.title} Track</div>
+                    <div className="text-[10px] text-accent font-bold uppercase tracking-wider">Coming Soon</div>
+                  </span>
+                </button>
+              );
+            }
+
+            // For active track (JavaScript), let's render the list of lessons under its active module
+            const jsModule = track.modules.find(m => m.status === 'active');
+            if (!jsModule) return null;
+
+            return (
+              <div key={track.id} className="flex flex-col items-center gap-2 w-full border-t border-border/30 pt-3 mt-1">
+                {filteredFundamentalsLessons.map((lesson, idx) => {
+                  const isActive = activeSelection.type === 'lesson' && activeSelection.id === lesson.id;
+                  const isBookmarked = isLessonBookmarked(lesson.id);
+
+                  return (
+                    <button
+                      key={lesson.id}
+                      onClick={() => onSelect({ type: 'lesson', id: lesson.id })}
+                      className={`group relative flex h-9 w-9 items-center justify-center rounded-lg transition-all cursor-pointer ${
+                        isActive
+                          ? 'bg-accent/15 text-accent border border-accent/20'
+                          : 'text-text-muted hover:bg-bg-card hover:text-text'
+                      }`}
+                    >
+                      {renderLessonStateIcon(lesson.id)}
+                      
+                      {/* Hover Tooltip */}
+                      <span className="pointer-events-none absolute left-14 top-1/2 -translate-y-1/2 z-50 rounded bg-[#0c0c0e] border border-border px-3 py-2 text-xs text-text opacity-0 transition-opacity duration-200 group-hover:opacity-100 whitespace-nowrap shadow-elevated flex flex-col gap-1">
+                        <div className="font-semibold text-text flex items-center gap-1.5">
+                          <span>Lecture 0{idx + 1}</span>
+                          {isBookmarked && <Bookmark className="h-3 w-3 fill-accent text-accent" />}
+                        </div>
+                        <div className="text-text-secondary">{lesson.title}</div>
+                        <div className="text-[10px] text-text-muted mt-0.5 flex items-center gap-2">
+                          <span className="capitalize">{lesson.difficulty}</span>
+                        </div>
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            );
+          })}
+        </nav>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex h-screen flex-col border-r border-border bg-[#0a0a0c] w-[280px]">
+    <div className="flex h-screen flex-col border-r border-border bg-[#0a0a0c] w-full">
       
       {/* Dynamic Progress Header */}
       <div className="border-b border-border p-4 bg-bg-soft/40">
@@ -136,7 +245,7 @@ export default function LessonSidebar({ activeLessonId, onSelect, activeSelectio
       </div>
 
       {/* File Explorer Tree */}
-      <nav className="flex-1 overflow-y-auto px-2 py-3 space-y-1 scrollbar-thin select-none" aria-label="Course explorer">
+      <nav className="flex-1 overflow-y-auto px-2 py-3 space-y-1 scrollbar-thin select-none" aria-label="Course explorer" data-lenis-prevent>
         {curriculumTree.map((track) => {
           const isTrackExpanded = expanded[track.id];
           const isComingSoon = track.status === 'coming-soon';
@@ -242,7 +351,6 @@ export default function LessonSidebar({ activeLessonId, onSelect, activeSelectio
                                     >
                                       {renderLessonStateIcon(lesson.id)}
                                       <span className="truncate flex-1">{lesson.title}</span>
-                                      <span className="text-[9px] text-text-muted/60 scale-90 font-mono">{lesson.duration}</span>
                                     </button>
 
                                     {/* Bookmark Action */}

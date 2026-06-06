@@ -148,3 +148,4 @@ export function getLessonsForModule(moduleId) {
   if (!mod) return [];
   return mod.lessons.map(id => getLessonById(id)).filter(Boolean);
 }
+

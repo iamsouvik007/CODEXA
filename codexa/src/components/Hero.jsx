@@ -145,7 +145,7 @@ const floatingSymbols = [
 
 export default function Hero() {
   const { ref, controls } = useScrollReveal(0.1);
-  const { displayed, isTyping } = useWordCycler(cycleWords, 80, 40, 2200);
+  const { displayed, status } = useWordCycler(cycleWords, 65, 25, 2000);
   const shouldReduceMotion = useReducedMotion();
 
   const [isHovered, setIsHovered] = useState(false);
@@ -156,8 +156,12 @@ export default function Hero() {
     const rect = ref.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    ref.current.style.setProperty('--local-mouse-x', `${x}px`);
-    ref.current.style.setProperty('--local-mouse-y', `${y}px`);
+    window.requestAnimationFrame(() => {
+      if (ref.current) {
+        ref.current.style.setProperty('--mouse-x', `${x}px`);
+        ref.current.style.setProperty('--mouse-y', `${y}px`);
+      }
+    });
   };
 
   const handleMouseEnter = () => {
@@ -185,11 +189,11 @@ export default function Hero() {
         {/* Layer 2: Giant Background CODEXA (Fits cleanly on page) */}
         <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
-          animate={{ opacity: 0.04, scale: 1 }}
+          animate={{ opacity: 0.08, scale: 1 }}
           transition={{ duration: 1.4, ease: 'easeOut' }}
-          className="absolute inset-x-0 top-[12%] flex items-center justify-center pointer-events-none z-[1] select-none"
+          className="absolute inset-x-0 top-[18%] flex items-center justify-center pointer-events-none z-[1] select-none"
         >
-          <span className="font-heading font-extrabold text-[clamp(80px,15vw,250px)] leading-none tracking-[-0.05em] text-accent select-none blur-[2px]">
+          <span className="font-heading font-extrabold text-[clamp(100px,18vw,380px)] leading-none tracking-[-0.05em] text-accent select-none blur-[1px]">
             CODEXA
           </span>
         </motion.div>
@@ -197,49 +201,97 @@ export default function Hero() {
         {/* Layer 3: Ambient Hero Glow */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1100px] h-[1100px] rounded-full bg-accent/[0.035] blur-[150px] z-[1] pointer-events-none" />
 
-        {/* Layer 4: Hidden Developer Layer - Base low opacity state */}
-        <div className="absolute inset-0 z-[2] opacity-30">
-          {developerKeywords.map((kw, i) => (
-            <div
-              key={`kw-bg-${i}`}
-              className={`absolute font-mono font-medium text-text-secondary/15 whitespace-nowrap select-none ${kw.fontSize}`}
-              style={{ top: kw.top, left: kw.left }}
-            >
-              {kw.text}
-            </div>
-          ))}
-          {codeSnippets.map((cs, i) => (
-            <div
-              key={`cs-bg-${i}`}
-              className={`absolute font-mono text-text-secondary/15 whitespace-nowrap select-none ${cs.fontSize}`}
-              style={{ top: cs.top, left: cs.left }}
-            >
-              {cs.tokens.map(t => t.text).join('')}
-            </div>
-          ))}
-          {floatingSymbols.map((sym, i) => (
-            <motion.div
-              key={`sym-bg-${i}`}
-              className={`absolute font-mono text-text-secondary/15 whitespace-nowrap select-none ${sym.fontSize}`}
-              style={{ top: sym.top, left: sym.left }}
-              animate={shouldReduceMotion ? {} : {
-                y: [0, -12, 0],
-                x: [0, 6, 0],
-                rotate: [0, 4, -4, 0]
-              }}
-              transition={{
-                duration: 8 + (i % 3) * 2.5,
-                repeat: Infinity,
-                ease: "easeInOut",
-                delay: i * 0.25
-              }}
-            >
-              {sym.text}
-            </motion.div>
-          ))}
-        </div>
+        {/* Layer 4: Floating Developer Canvas (Hardware accelerated) */}
+        <motion.div
+          animate={shouldReduceMotion ? {} : {
+            y: [0, -10, 0],
+            x: [0, 4, 0]
+          }}
+          transition={{
+            duration: 15,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+          className="absolute inset-0 z-[2] will-change-transform"
+        >
+          {/* Base Faint Gray Layer (Visible without hover) */}
+          <div className="absolute inset-0">
+            {developerKeywords.map((kw, i) => (
+              <div
+                key={`kw-bg-${i}`}
+                className={`absolute font-mono font-medium text-text-secondary/15 whitespace-nowrap select-none ${kw.fontSize}`}
+                style={{ top: kw.top, left: kw.left }}
+              >
+                {kw.text}
+              </div>
+            ))}
+            {codeSnippets.map((cs, i) => (
+              <div
+                key={`cs-bg-${i}`}
+                className={`absolute font-mono text-text-secondary/15 whitespace-nowrap select-none ${cs.fontSize}`}
+                style={{ top: cs.top, left: cs.left }}
+              >
+                {cs.tokens.map(t => t.text).join('')}
+              </div>
+            ))}
+            {floatingSymbols.map((sym, i) => (
+              <div
+                key={`sym-bg-${i}`}
+                className={`absolute font-mono text-text-secondary/15 whitespace-nowrap select-none ${sym.fontSize}`}
+                style={{ top: sym.top, left: sym.left }}
+              >
+                {sym.text}
+              </div>
+            ))}
+          </div>
 
-        {/* Layer 5: Cursor Spotlight Layer (White core/very light orange spotlight) */}
+          {/* Masked Revealed Color Syntax Layer (Visible only under hover spotlight) */}
+          {!shouldReduceMotion && (
+            <motion.div
+              className="absolute inset-0 select-none pointer-events-none"
+              animate={{
+                opacity: isHovered ? 1 : 0
+              }}
+              transition={{ duration: 0.25 }}
+              style={{
+                maskImage: 'radial-gradient(280px circle at var(--mouse-x, -1000px) var(--mouse-y, -1000px), black 0%, transparent 100%)',
+                WebkitMaskImage: 'radial-gradient(280px circle at var(--mouse-x, -1000px) var(--mouse-y, -1000px), black 0%, transparent 100%)',
+              }}
+            >
+              {developerKeywords.map((kw, i) => (
+                <div
+                  key={`kw-fg-${i}`}
+                  className={`absolute font-mono font-semibold ${kw.color} whitespace-nowrap drop-shadow-[0_0_6px_rgba(255,255,255,0.1)] select-none ${kw.fontSize}`}
+                  style={{ top: kw.top, left: kw.left }}
+                >
+                  {kw.text}
+                </div>
+              ))}
+              {codeSnippets.map((cs, i) => (
+                <div
+                  key={`cs-fg-${i}`}
+                  className={`absolute font-mono font-medium whitespace-nowrap select-none ${cs.fontSize}`}
+                  style={{ top: cs.top, left: cs.left }}
+                >
+                  {cs.tokens.map((t, idx) => (
+                    <span key={idx} className={t.color}>{t.text}</span>
+                  ))}
+                </div>
+              ))}
+              {floatingSymbols.map((sym, i) => (
+                <div
+                  key={`sym-fg-${i}`}
+                  className={`absolute font-mono font-bold ${sym.color} whitespace-nowrap drop-shadow-[0_0_8px_rgba(255,255,255,0.15)] select-none ${sym.fontSize}`}
+                  style={{ top: sym.top, left: sym.left }}
+                >
+                  {sym.text}
+                </div>
+              ))}
+            </motion.div>
+          )}
+        </motion.div>
+
+        {/* Layer 5: Cursor Spotlight Layer (GPU-accelerated warm background radial glow light) */}
         {!shouldReduceMotion && (
           <motion.div
             className="absolute rounded-full pointer-events-none z-[3] mix-blend-screen"
@@ -248,71 +300,15 @@ export default function Hero() {
             }}
             transition={{ duration: 0.3 }}
             style={{
-              left: 'var(--local-mouse-x, -1000px)',
-              top: 'var(--local-mouse-y, -1000px)',
-              transform: 'translate(-50%, -50%)',
-              width: '600px',
-              height: '600px',
-              background: 'radial-gradient(circle, rgba(253, 186, 116, 0.07) 0%, rgba(249, 115, 22, 0.02) 45%, rgba(249, 115, 22, 0.005) 75%, transparent 100%)',
+              left: 0,
+              top: 0,
+              width: '550px',
+              height: '550px',
+              background: 'radial-gradient(circle, rgba(253, 186, 116, 0.16) 0%, rgba(249, 115, 22, 0.04) 40%, transparent 70%)',
+              transform: 'translate3d(var(--mouse-x, -1000px), var(--mouse-y, -1000px), 0) translate(-50%, -50%)',
             }}
             aria-hidden="true"
           />
-        )}
-
-        {/* Layer 6: Masked Revealed Layer (Revealed in multi-color syntax highlight) */}
-        {!shouldReduceMotion && (
-          <motion.div
-            className="absolute inset-0 z-[4] select-none pointer-events-none"
-            animate={{
-              opacity: isHovered ? 1 : 0
-            }}
-            transition={{ duration: 0.25 }}
-            style={{
-              maskImage: 'radial-gradient(350px circle at var(--local-mouse-x, -1000px) var(--local-mouse-y, -1000px), black 0%, rgba(0,0,0,0.5) 45%, transparent 100%)',
-              WebkitMaskImage: 'radial-gradient(350px circle at var(--local-mouse-x, -1000px) var(--local-mouse-y, -1000px), black 0%, rgba(0,0,0,0.5) 45%, transparent 100%)',
-            }}
-          >
-            {developerKeywords.map((kw, i) => (
-              <div
-                key={`kw-fg-${i}`}
-                className={`absolute font-mono font-semibold ${kw.color} whitespace-nowrap drop-shadow-[0_0_6px_rgba(255,255,255,0.1)] select-none ${kw.fontSize}`}
-                style={{ top: kw.top, left: kw.left }}
-              >
-                {kw.text}
-              </div>
-            ))}
-            {codeSnippets.map((cs, i) => (
-              <div
-                key={`cs-fg-${i}`}
-                className={`absolute font-mono font-medium whitespace-nowrap select-none ${cs.fontSize}`}
-                style={{ top: cs.top, left: cs.left }}
-              >
-                {cs.tokens.map((t, idx) => (
-                  <span key={idx} className={t.color}>{t.text}</span>
-                ))}
-              </div>
-            ))}
-            {floatingSymbols.map((sym, i) => (
-              <motion.div
-                key={`sym-fg-${i}`}
-                className={`absolute font-mono font-bold ${sym.color} whitespace-nowrap drop-shadow-[0_0_8px_rgba(255,255,255,0.15)] select-none ${sym.fontSize}`}
-                style={{ top: sym.top, left: sym.left }}
-                animate={{
-                  y: [0, -12, 0],
-                  x: [0, 6, 0],
-                  rotate: [0, 4, -4, 0]
-                }}
-                transition={{
-                  duration: 8 + (i % 3) * 2.5,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  delay: i * 0.25
-                }}
-              >
-                {sym.text}
-              </motion.div>
-            ))}
-          </motion.div>
         )}
 
         {/* Floating micro node connection lines */}
@@ -378,7 +374,7 @@ export default function Hero() {
           <div className="absolute inset-x-0 -top-6 mx-auto w-[280px] h-[90px] bg-accent/15 blur-[45px] rounded-full pointer-events-none" />
           
           <h1
-            className="font-heading text-[5rem] font-semibold tracking-[-0.04em] sm:text-8xl md:text-9xl lg:text-[10rem] xl:text-[11rem] bg-gradient-to-b from-white via-zinc-200 to-zinc-500 bg-clip-text text-transparent drop-shadow-[0_4px_16px_rgba(0,0,0,0.85)] text-center leading-[0.85]"
+            className="font-heading text-[5.8rem] font-bold tracking-[-0.04em] sm:text-8xl md:text-[9.5rem] lg:text-[11rem] xl:text-[12.5rem] bg-gradient-to-b from-white via-zinc-200 to-zinc-500 bg-clip-text text-transparent drop-shadow-[0_4px_16px_rgba(0,0,0,0.85)] text-center leading-[0.85]"
             style={{
               textShadow: '0 0 35px rgba(249,115,22,0.12)'
             }}
@@ -399,20 +395,22 @@ export default function Hero() {
           </span>
         </motion.h2>
 
-        {/* Typing animation */}
+        {/* Wobble-free Typing animation */}
         <motion.div
           variants={fadeUp}
-          className="mx-auto mt-6 flex items-center justify-center gap-2 text-xl text-text-secondary sm:text-2xl md:text-3xl"
+          className="mx-auto mt-6 flex items-center justify-center text-xl text-text-secondary sm:text-2xl md:text-3xl"
         >
-          <span className="font-heading font-medium tracking-tight text-text">
-            {displayed}
-          </span>
-          <span
-            className={`inline-block h-7 w-[3px] rounded-full bg-accent sm:h-8 ${
-              isTyping ? 'opacity-100' : 'animate-pulse'
-            }`}
-            aria-hidden="true"
-          />
+          <div className="inline-flex w-[280px] sm:w-[380px] md:w-[440px] items-center justify-start text-left gap-1.5">
+            <span className="font-heading font-medium tracking-tight text-text">
+              {displayed || '\u200B'}
+            </span>
+            <span
+              className={`inline-block h-6 w-[2.5px] rounded-full bg-accent sm:h-7 ${
+                status === 'waiting' ? 'animate-cursor-blink' : 'opacity-100'
+              }`}
+              aria-hidden="true"
+            />
+          </div>
         </motion.div>
 
         {/* Sub-headline */}
@@ -440,7 +438,14 @@ export default function Hero() {
             href="#roadmap"
             onClick={(e) => {
               e.preventDefault();
-              document.querySelector('#roadmap')?.scrollIntoView({ behavior: 'smooth' });
+              const target = document.querySelector('#roadmap');
+              if (target) {
+                if (window.lenis) {
+                  window.lenis.scrollTo(target, { offset: -80, duration: 1.2 });
+                } else {
+                  target.scrollIntoView({ behavior: 'smooth' });
+                }
+              }
             }}
             className="group inline-flex items-center gap-2 rounded-pill border border-border bg-bg-card/60 px-8 py-3.5 text-base font-medium text-text-secondary backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-border-strong hover:text-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-border-strong focus-visible:ring-offset-2 focus-visible:ring-offset-bg"
           >

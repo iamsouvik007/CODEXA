@@ -1,3 +1,4 @@
+/* global process */
 import fs from 'fs';
 import path from 'path';
 import { marked } from 'marked';
@@ -255,7 +256,7 @@ function parseLesson(filePath, moduleId) {
 
   // Aggregate all code blocks
   const allCodeBlocks = extractCodeBlocks(raw);
-  const plainText = raw.replace(/```[\s\S]*?```/g, '').replace(/[#*`\[\]()]/g, '');
+  const plainText = raw.replace(/```[\s\S]*?```/g, '').replace(/[#*`[\]()]/g, '');
 
   let customQuiz = null;
   const quizMatch = raw.match(/<!-- QUIZ_START([\s\S]*?)QUIZ_END -->/);
@@ -281,7 +282,13 @@ function parseLesson(filePath, moduleId) {
     id: moduleId,
     moduleId,
     title,
-    sections: sections.map(({ rawContent, ...rest }) => rest),
+    rawMarkdown: raw,
+    tokens: marked.lexer(raw),
+    rawMarkdownHtml: marked.parse(raw),
+    sections: sections.map((s) => {
+      const { rawContent, ...rest } = s; // eslint-disable-line no-unused-vars
+      return rest;
+    }),
     metadata: {
       estimatedReadingTime: estimateReadingTime(plainText),
       difficulty: determineDifficulty(sections, allCodeBlocks),
@@ -298,7 +305,9 @@ function parseLesson(filePath, moduleId) {
  * Vite plugin that processes markdown lesson files at build time.
  */
 export default function lessonsPlugin() {
-  const notesDir = path.resolve(process.cwd(), '..', 'notes');
+  const notesDir = fs.existsSync(path.resolve(process.cwd(), 'notes'))
+    ? path.resolve(process.cwd(), 'notes')
+    : path.resolve(process.cwd(), '..', 'notes');
 
   return {
     name: 'vite-plugin-lessons',

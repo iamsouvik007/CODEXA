@@ -53,6 +53,7 @@
 @layer base {
   html {
     scroll-behavior: smooth;
+    scroll-padding-top: 80px; /* Offset for fixed navbar */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -423,4 +424,60 @@
 
 .animate-shake {
   animation: shake 0.4s ease-in-out;
+}
+
+@keyframes cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.animate-cursor-blink {
+  animation: cursor-blink 1s step-end infinite;
+}
+
+/* Custom Webkit scrollbar for premium dark appearance */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border-strong);
+}
+
+/* ─── Detail Doc Specific Styles ─── */
+.prose-detail-doc {
+  color: #d4d4d8 !important;
+}
+
+.prose-detail-doc h1,
+.prose-detail-doc h2,
+.prose-detail-doc h3,
+.prose-detail-doc h4,
+.prose-detail-doc h5,
+.prose-detail-doc h6,
+.prose-detail-doc.prose-codexa h1,
+.prose-detail-doc.prose-codexa h2,
+.prose-detail-doc.prose-codexa h3,
+.prose-detail-doc.prose-codexa h4 {
+  color: #f97316 !important;
+  font-weight: 700 !important;
+}
+
+.prose-detail-doc p,
+.prose-detail-doc li,
+.prose-detail-doc em,
+.prose-detail-doc blockquote {
+  color: #d4d4d8 !important;
+}
+
+.prose-detail-doc strong {
+  color: #e4e4e7 !important;
+  font-weight: 600 !important;
 }

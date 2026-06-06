@@ -76,10 +76,6 @@ export default function SidebarModule({ module, lessons, activeLessonId, isExpan
                         {lesson.title}
                       </span>
                       <div className="mt-0.5 flex items-center gap-2 text-[10px] text-text-muted">
-                        <span className="flex items-center gap-0.5">
-                          <Clock className="h-2.5 w-2.5" />
-                          {lesson.metadata.estimatedReadingTime}m
-                        </span>
                         <span className="capitalize">{lesson.metadata.difficulty}</span>
                       </div>
                     </div>

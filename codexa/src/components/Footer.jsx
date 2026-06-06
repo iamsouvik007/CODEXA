@@ -1,5 +1,21 @@
 import { Sparkles, Code2, MessageCircle } from 'lucide-react';
 
+const Github = (props) => (
+  <svg
+    viewBox="0 0 24 24"
+    width="24"
+    height="24"
+    stroke="currentColor"
+    strokeWidth="2"
+    fill="none"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    {...props}
+  >
+    <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
+  </svg>
+);
+
 const footerLinks = {
   Product: [
     { label: 'Learn', href: '#learn' },
@@ -34,9 +50,7 @@ export default function Footer() {
           {/* Logo & description */}
           <div className="lg:col-span-1">
             <a href="#" className="flex items-center gap-2 text-text" aria-label="Codexa home">
-              <div className="flex h-7 w-7 items-center justify-center rounded-md bg-accent">
-                <Sparkles className="h-3.5 w-3.5 text-white" aria-hidden="true" />
-              </div>
+              <img src="/favicon-32x32.png" alt="Codexa Logo" className="h-7 w-7 rounded-md" />
               <span className="font-heading text-base font-semibold tracking-tight">Codexa</span>
             </a>
             <p className="mt-3 text-sm leading-relaxed text-text-muted">
@@ -44,11 +58,13 @@ export default function Footer() {
             </p>
             <div className="mt-4 flex items-center gap-3">
               <a
-                href="#"
+                href="https://github.com/iamsouvik007/CODEXA"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="flex h-8 w-8 items-center justify-center rounded-md text-text-muted transition-colors hover:bg-bg-card hover:text-text"
-                aria-label="GitHub"
+                aria-label="GitHub Repository"
               >
-                <Code2 className="h-4 w-4" />
+                <Github className="h-4 w-4" />
               </a>
               <a
                 href="#"

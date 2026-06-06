@@ -3,39 +3,18 @@ import { motion } from 'framer-motion';
 import { Clock, BarChart3, BookOpen, CheckCircle2, ChevronRight } from 'lucide-react';
 import { useProgress } from '../../lib/ProgressContext';
 import { useNavigate } from 'react-router-dom';
+import { useAITutor } from '../../lib/AITutorContext';
 import { getNextLesson, getPrevLesson } from '../../lib/lessonData';
-import ConceptCard from './cards/ConceptCard';
-import CodeBlock from './cards/CodeBlock';
-import AnalogyCard from './cards/AnalogyCard';
-import WarningCard from './cards/WarningCard';
-import MisconceptionCard from './cards/MisconceptionCard';
-import InterviewTipCard from './cards/InterviewTipCard';
-import SummaryCard from './cards/SummaryCard';
-import DataTable from './cards/DataTable';
-import InsightCard from './cards/InsightCard';
-import VisualExplanationCard from './cards/VisualExplanationCard';
-import LearningResourcesCard from './cards/LearningResourcesCard';
-import PracticeCard from './cards/PracticeCard';
 import QuizEngine from './quiz/QuizEngine';
 import RevisionMode from './RevisionMode';
+import MarkdownRenderer from './MarkdownRenderer';
 
-const cardComponents = {
-  concept: ConceptCard,
-  'code-example': CodeBlock,
-  analogy: AnalogyCard,
-  warning: WarningCard,
-  misconception: MisconceptionCard,
-  'interview-tip': InterviewTipCard,
-  summary: SummaryCard,
-  insight: InsightCard,
-  visual: VisualExplanationCard,
-  resources: LearningResourcesCard,
-  practice: PracticeCard,
-};
+
 
 export default function LessonView({ lesson, onOpenModal }) {
   const navigate = useNavigate();
   const { isLessonComplete, markLessonComplete, updateLessonProgress } = useProgress();
+  const { setLessonContext } = useAITutor();
   const [activeTab, setActiveTab] = useState('lesson');
   const [scrollProgress, setScrollProgress] = useState(0);
   const contentRef = useRef(null);
@@ -43,18 +22,42 @@ export default function LessonView({ lesson, onOpenModal }) {
   const nextLesson = getNextLesson(lesson.id);
   const prevLesson = getPrevLesson(lesson.id);
 
+  // Sync active lesson context with AI Tutor
+  useEffect(() => {
+    if (lesson) {
+      setLessonContext({
+        title: lesson.title,
+        moduleId: lesson.moduleId,
+        metadata: lesson.metadata,
+        sections: lesson.sections,
+        quiz: lesson.quiz,
+        activeTab: activeTab
+      });
+    }
+    return () => {
+      setLessonContext(null);
+    };
+  }, [lesson.id, activeTab, setLessonContext]);
+
+  // Scroll to top when lesson or tab changes
+  useEffect(() => {
+    const el = document.getElementById('lesson-scroll-container') || document.documentElement;
+    el.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [lesson.id, activeTab]);
+
   // Scroll progress tracking
   useEffect(() => {
+    const el = document.getElementById('lesson-scroll-container') || document.documentElement;
     const handleScroll = () => {
-      const el = document.documentElement;
       const scrollTop = el.scrollTop;
       const scrollHeight = el.scrollHeight - el.clientHeight;
       const pct = scrollHeight > 0 ? Math.round((scrollTop / scrollHeight) * 100) : 0;
       setScrollProgress(pct);
     };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+    el.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => el.removeEventListener('scroll', handleScroll);
+  }, [lesson.id]);
 
   // Debounced progress save
   useEffect(() => {
@@ -85,7 +88,7 @@ export default function LessonView({ lesson, onOpenModal }) {
   return (
     <div className="pb-24 lg:pb-8">
       {/* Scroll progress bar */}
-      <div className="fixed top-0 right-0 left-0 z-20 h-0.5 lg:left-[280px]">
+      <div className="fixed top-0 right-0 left-0 z-20 h-0.5 lg:left-[var(--sidebar-width,280px)]">
         <motion.div
           className="h-full bg-accent"
           style={{ width: `${scrollProgress}%` }}
@@ -112,10 +115,6 @@ export default function LessonView({ lesson, onOpenModal }) {
                 {lesson.title}
               </h1>
               <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-text-muted">
-                <span className="flex items-center gap-1">
-                  <Clock className="h-3.5 w-3.5" />
-                  {lesson.metadata.estimatedReadingTime} min read
-                </span>
                 <span className={`rounded-full px-2 py-0.5 text-xs font-medium capitalize ${difficultyColors[lesson.metadata.difficulty]}`}>
                   {lesson.metadata.difficulty}
                 </span>
@@ -164,36 +163,7 @@ export default function LessonView({ lesson, onOpenModal }) {
       <div ref={contentRef} className="mx-auto max-w-4xl px-5 py-8 sm:px-8">
         {activeTab === 'lesson' && (
           <div className="space-y-6">
-            {lesson.sections.map((section, idx) => {
-              // If section has tables, render them
-              if (section.tables && section.tables.length > 0) {
-                return (
-                  <div key={idx} className="space-y-6">
-                    {section.heading && (
-                      <ConceptCard section={{ ...section, content: section.content.replace(/<table[\s\S]*?<\/table>/gi, '') }} index={idx} />
-                    )}
-                    {section.tables.map((table, ti) => (
-                      <DataTable key={`${idx}-t-${ti}`} html={table} />
-                    ))}
-                  </div>
-                );
-              }
-
-              // If section has code blocks and is a concept type, render both
-              if (section.codeBlocks && section.codeBlocks.length > 0 && section.type === 'concept') {
-                return (
-                  <div key={idx} className="space-y-4">
-                    <ConceptCard section={section} index={idx} />
-                    {section.codeBlocks.map((block, ci) => (
-                      <CodeBlock key={`${idx}-c-${ci}`} code={block.code} language={block.language} />
-                    ))}
-                  </div>
-                );
-              }
-
-              const Card = cardComponents[section.type] || ConceptCard;
-              return <Card key={idx} section={section} index={idx} />;
-            })}
+            <MarkdownRenderer tokens={lesson.tokens} />
 
             {/* Next lesson CTA */}
             {nextLesson && (

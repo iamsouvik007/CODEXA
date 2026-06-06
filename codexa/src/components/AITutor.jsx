@@ -1,62 +1,170 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bot, X, Minus, Send, GripVertical, AlertCircle, Compass, HelpCircle } from 'lucide-react';
+import { 
+  Bot, X, Minus, Send, GripVertical, AlertCircle, Eye, EyeOff, 
+  Check, Copy, ArrowRight, ArrowLeft, Key, Settings, Maximize2, Minimize2, Bookmark, HelpCircle
+} from 'lucide-react';
 import { useAITutor } from '../lib/AITutorContext';
 import { useProgress } from '../lib/ProgressContext';
 import { getLessonById } from '../lib/lessonData';
+import { validateKeyFormat, testConnection, callAIProvider } from '../lib/aiClient';
+import { marked } from 'marked';
+import hljs from 'highlight.js/lib/core';
+import javascript from 'highlight.js/lib/languages/javascript';
+import css from 'highlight.js/lib/languages/css';
+import xml from 'highlight.js/lib/languages/xml';
+import cpp from 'highlight.js/lib/languages/cpp';
+
+// Register hljs languages
+hljs.registerLanguage('javascript', javascript);
+hljs.registerLanguage('jsx', javascript);
+hljs.registerLanguage('js', javascript);
+hljs.registerLanguage('css', css);
+hljs.registerLanguage('html', xml);
+hljs.registerLanguage('xml', xml);
+hljs.registerLanguage('cpp', cpp);
 
 const initialMessages = [
   {
     role: 'ai',
-    text: "Hi! I'm your Codexa AI Tutor. I know everything about your current lesson, code editor, and quiz state. Ask me anything or select a suggested doubt below!",
+    text: "Hi! I'm your Codexa AI Tutor. I know everything about your current lesson, code editor, and quiz state. Ask me anything or click a quick action below!",
   },
 ];
 
-// Rich context-aware answers based on active lesson
-const aiKnowledgeBase = {
-  '1': {
-    analogy: "JavaScript is like the nervous system of a house. HTML is the concrete foundation, CSS is the wall paint, but JavaScript is the wiring that lets you flick a switch and turn on the lights or open the garage door dynamically.",
-    debug: "Your syntax looks solid. Remember, JavaScript is case-sensitive! Make sure `console.log()` is typed in all lowercase, otherwise the engine will throw a ReferenceError.",
-    practice: "Try writing a program that prints your name and your favorite programming language to the console using two separate `console.log()` statements.",
-    summary: "Lesson 1 covers why JavaScript was invented (as a lightweight 'glue' language for web design), its historic 10-day scramble in 1995, and how it outlived Java applets because it runs natively in the browser without plugins.",
-    explain: "In JavaScript, statements are executed in order. The `console.log()` method is a built-in function that takes an input and writes it directly to the system's output console.",
-    interview: "Q: What is the difference between Java and JavaScript?\n\nAnswer: Java and JavaScript are entirely unrelated. Java is a compiled, statically typed class-based language running in a VM, while JavaScript is an interpreted, lightweight, dynamically typed scripting language running natively in browsers."
-  },
-  '2': {
-    analogy: "Think of variables like storage cups with labels taped on them. A primitive type (like a number) fits directly inside the cup. An object type (like an array) is too big to fit inside the cup, so the cup just holds a paper slip with the address of where that object is stored in a larger warehouse.",
-    debug: "Make sure you don't re-declare a let variable in the same scope, like this:\n`let age = 20; let age = 21;` // SyntaxError. Instead, use: `age = 21;` without the let keyword.",
-    practice: "Practice declaring a variable using `const` that stores your birth year. Then try to assign a new value to it and observe the error in your console.",
-    summary: "Lesson 2 details primitive types (number, string, boolean, undefined, null, symbol, bigint) which are copied by value, and object types which are copied by reference. It also explains variable scopes.",
-    explain: "Primitive values are stored directly on the Stack. Objects, being dynamic in size, are stored on the Heap, and variables store a pointer address referring to that heap location.",
-    interview: "Q: What is the Temporal Dead Zone (TDZ)?\n\nAnswer: TDZ is the period of time from the start of a block until a `let` or `const` variable is declared. Accessing the variable during this window throws a ReferenceError."
-  },
-  '3': {
-    analogy: "Think of operators like gears or conveyor belts in a factory. You place inputs (operands) on the belt, the operator gear spins (performs math or comparison), and a new output drops off the end.",
-    debug: "Common bug: using loose equality `==` which coerces types. Always prefer strict equality `===` which checks both value and type without silent coercion.",
-    practice: "Write an expression that checks if a number variable is even and positive using mathematical and logical operators. Hint: `num % 2 === 0 && num > 0`.",
-    summary: "Lesson 3 explains operators: arithmetic (+, -, *, /, %, ++), comparisons (==, ===, !=, !==), and logical short-circuiting (&&, ||, !).",
-    explain: "Short-circuiting means logical expressions evaluate from left to right. In `A && B`, if A is false, B is skipped. In `A || B`, if A is true, B is skipped.",
-    interview: "Q: Why is `typeof null` returned as 'object'?\n\nAnswer: This is a legacy bug from the first version of JavaScript. Values were stored in 32-bit units with type tags. The tag for objects was 000, and null was represented as the NULL pointer (all 0s), leading `typeof` to mistakenly classify null as an object."
-  },
-  '4': {
-    analogy: "A loop is like a carousel ride. The ticket booth checker checks if you still have remaining rides (loop condition). If yes, the carousel spins once (loop iteration). If no, you exit the ride.",
-    debug: "Beware of infinite loops! If your loop condition never evaluates to false (e.g. you forgot to increment the counter), the loop will run forever and freeze the browser tab.",
-    practice: "Write a for loop that calculates the sum of all numbers from 1 to 10 and prints the final result.",
-    summary: "Lesson 4 teaches control flow structures: `if/else` branching, `switch` blocks, `while` loops, and `for` loop cycles.",
-    explain: "A `for` loop combines three parts: initialization (`let i = 0`), condition (`i < limit`), and increment/decrement (`i++`). The loop runs body statements as long as the condition evaluates to truthy.",
-    interview: "Q: What is the difference between `break` and `continue`?\n\nAnswer: `break` immediately terminates the loop and control passes to the statement following the loop. `continue` terminates the current iteration only, skipping remaining statements in the body, and jumps directly to the next iteration check."
+// Helper to parse message contents into paragraphs vs code blocks
+function parseMessageContent(text) {
+  if (!text) return [];
+  const regex = /```(\w*)\n([\s\S]*?)```/g;
+  const parts = [];
+  let lastIndex = 0;
+  let match;
+
+  while ((match = regex.exec(text)) !== null) {
+    const textBefore = text.substring(lastIndex, match.index);
+    if (textBefore) {
+      parts.push({ type: 'text', content: textBefore });
+    }
+    parts.push({ type: 'code', language: match[1] || 'javascript', content: match[2] });
+    lastIndex = regex.lastIndex;
   }
+
+  const textAfter = text.substring(lastIndex);
+  if (textAfter) {
+    parts.push({ type: 'text', content: textAfter });
+  }
+
+  if (parts.length === 0 && text) {
+    parts.push({ type: 'text', content: text });
+  }
+
+  return parts;
+}
+
+// Sub-component to render custom code block with Copy button and syntax highlighting
+function AITutorCodeBlock({ code, language }) {
+  const [copied, setCopied] = useState(false);
+  
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {}
+  };
+
+  let highlighted = '';
+  try {
+    const lang = hljs.getLanguage(language) ? language : 'javascript';
+    highlighted = hljs.highlight(code.trim(), { language: lang }).value;
+  } catch {
+    highlighted = code.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  return (
+    <div className="my-3 overflow-hidden rounded-lg border border-border bg-[#0d0d0f] text-left">
+      <div className="flex items-center justify-between border-b border-border bg-[#090a0d] px-3 py-1.5 text-[10px] font-mono text-text-muted">
+        <span className="uppercase">{language || 'code'}</span>
+        <button
+          onClick={handleCopy}
+          className="flex items-center gap-1 rounded px-1.5 py-0.5 hover:bg-bg-elevated hover:text-text cursor-pointer transition-colors"
+        >
+          {copied ? <Check className="h-3 w-3 text-success" /> : <Copy className="h-3 w-3" />}
+          {copied ? 'Copied' : 'Copy'}
+        </button>
+      </div>
+      <pre className="p-3 overflow-x-auto font-mono text-[11px] leading-relaxed text-text bg-black/40">
+        <code dangerouslySetInnerHTML={{ __html: highlighted }} />
+      </pre>
+    </div>
+  );
+}
+
+const getSystemPrompt = (context) => {
+  let contextStr = '';
+  if (context) {
+    contextStr = `
+You are a programming mentor on CODEXA, an interactive developer learning platform.
+The user is currently studying the following lesson:
+- **Lesson Title**: ${context.title}
+- **Module ID**: ${context.moduleId}
+- **Difficulty**: ${context.metadata?.difficulty || 'N/A'}
+- **Estimated Reading Time**: ${context.metadata?.estimatedReadingTime || 'N/A'} minutes
+- **Active Tab/Activity**: ${context.activeTab || 'lesson'}
+
+Here is the lesson content they are reading:
+${JSON.stringify(context.sections?.map(s => ({ type: s.type, heading: s.heading, content: s.content })))}
+
+Current Quiz Questions for this lesson:
+${JSON.stringify(context.quiz?.map(q => ({ question: q.question, options: q.options })))}
+`;
+  } else {
+    contextStr = `You are a programming mentor on CODEXA. The user is currently browsing the learning hub.`;
+  }
+
+  return `
+${contextStr}
+
+Your role is to behave as a programming mentor.
+Capabilities:
+- Explain Concepts
+- Explain Code Execution
+- Generate Analogies
+- Generate Quizzes
+- Generate Practice Questions
+- Debug Code
+- Interview Preparation
+- Summarize Lessons
+- Suggest Learning Paths
+
+Your responses should be educational, structured, and beginner-friendly. Use markdown rendering and syntax highlighting where appropriate. Keep your answers concise, engaging, and clear.
+`;
 };
 
 export default function AITutor() {
-  const { isOpen, isMinimized, open, close, minimize, restore } = useAITutor();
+  const { isOpen, isMinimized, open, close, minimize, restore, lessonContext } = useAITutor();
   const { progress } = useProgress();
+  
+  // Storage keys configuration
+  const [isConfigured, setIsConfigured] = useState(() => {
+    return !!(localStorage.getItem('selected_provider') && localStorage.getItem('provider_api_key'));
+  });
+
+  // Setup state
+  const [setupStep, setSetupStep] = useState(1); // 1: Select, 2: Key Input, 3: Verifying
+  const [selectedProvider, setSelectedProvider] = useState('openai'); // openai | nvidia | groq | claude
+  const [apiKey, setApiKey] = useState('');
+  const [showKey, setShowKey] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [verifyError, setVerifyError] = useState('');
+
+  // Chat window state
   const [messages, setMessages] = useState(initialMessages);
   const [inputValue, setInputValue] = useState('');
   const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [size, setSize] = useState({ w: 380, h: 500 });
+  const [size, setSize] = useState({ w: 390, h: 540 });
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
+  const [isMaximized, setIsMaximized] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   
   const panelRef = useRef(null);
@@ -68,14 +176,15 @@ export default function AITutor() {
   const activeLessonId = progress.currentLesson || '3';
   const activeLesson = getLessonById(activeLessonId);
 
-  // Suggested prompt list for this lesson
-  const suggestedPrompts = [
-    { label: 'Explain Concept', type: 'explain' },
-    { label: 'Give Analogy', type: 'analogy' },
-    { label: 'Summarize Lesson', type: 'summary' },
-    { label: 'Interview Prep', type: 'interview' },
-    { label: 'Practice Question', type: 'practice' },
-    { label: 'Debug Help', type: 'debug' }
+  // Quick Action configuration
+  const quickActions = [
+    { label: 'Explain Topic', prompt: 'Explain this topic dynamically.' },
+    { label: 'Explain Line by Line', prompt: 'Explain the code examples in this lesson line by line.' },
+    { label: 'Generate Quiz', prompt: 'Generate a quick quiz with multiple-choice questions about this lesson.' },
+    { label: 'Practice Questions', prompt: 'Give me some practice coding challenges for this lesson.' },
+    { label: 'Interview Questions', prompt: 'Give me some typical developer interview questions on this topic.' },
+    { label: 'Summarize Lesson', prompt: 'Provide a clean, bulleted summary of this lesson.' },
+    { label: 'Debug Code', prompt: 'How do I debug syntax errors or reference issues in this code?' }
   ];
 
   // Auto scroll messages
@@ -83,9 +192,9 @@ export default function AITutor() {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages, isTyping]);
+  }, [messages, isTyping, setupStep, isConfigured]);
 
-  // Handle position initialization
+  // Position setup modal or window
   useEffect(() => {
     if (isOpen && position.x === 0 && position.y === 0) {
       setPosition({
@@ -95,18 +204,30 @@ export default function AITutor() {
     }
   }, [isOpen, position.x, position.y, size.w, size.h]);
 
+  // Sync keys from localStorage on config changes
+  useEffect(() => {
+    if (!isConfigured) {
+      const p = localStorage.getItem('selected_provider');
+      const k = localStorage.getItem('provider_api_key');
+      if (p && k) {
+        setIsConfigured(true);
+      }
+    }
+  }, [isConfigured]);
+
   // Drag handlers
   const onDragStart = useCallback((e) => {
+    if (isMaximized) return;
     if (e.target.closest('button') || e.target.closest('input') || e.target.closest('textarea')) return;
     e.preventDefault();
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
     const clientY = e.touches ? e.touches[0].clientY : e.clientY;
     dragStartRef.current = { x: clientX, y: clientY, posX: position.x, posY: position.y };
     setIsDragging(true);
-  }, [position]);
+  }, [position, isMaximized]);
 
   useEffect(() => {
-    if (!isDragging) return;
+    if (!isDragging || isMaximized) return;
     const onMove = (e) => {
       const clientX = e.touches ? e.touches[0].clientX : e.clientX;
       const clientY = e.touches ? e.touches[0].clientY : e.clientY;
@@ -129,28 +250,29 @@ export default function AITutor() {
       window.removeEventListener('touchmove', onMove);
       window.removeEventListener('touchend', onUp);
     };
-  }, [isDragging, size.w, size.h]);
+  }, [isDragging, size.w, size.h, isMaximized]);
 
   // Resize handlers
   const onResizeStart = useCallback((e) => {
+    if (isMaximized) return;
     e.preventDefault();
     e.stopPropagation();
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
     const clientY = e.touches ? e.touches[0].clientY : e.clientY;
     resizeStartRef.current = { x: clientX, y: clientY, w: size.w, h: size.h };
     setIsResizing(true);
-  }, [size]);
+  }, [size, isMaximized]);
 
   useEffect(() => {
-    if (!isResizing) return;
+    if (!isResizing || isMaximized) return;
     const onMove = (e) => {
       const clientX = e.touches ? e.touches[0].clientX : e.clientX;
       const clientY = e.touches ? e.touches[0].clientY : e.clientY;
       const dw = clientX - resizeStartRef.current.x;
       const dh = clientY - resizeStartRef.current.y;
       
-      const newW = Math.max(320, Math.min(600, resizeStartRef.current.w + dw));
-      const newH = Math.max(380, Math.min(700, resizeStartRef.current.h + dh));
+      const newW = Math.max(340, Math.min(800, resizeStartRef.current.w + dw));
+      const newH = Math.max(400, Math.min(800, resizeStartRef.current.h + dh));
       setSize({ w: newW, h: newH });
     };
     const onUp = () => setIsResizing(false);
@@ -165,52 +287,98 @@ export default function AITutor() {
       window.removeEventListener('touchmove', onMove);
       window.removeEventListener('touchend', onUp);
     };
-  }, [isResizing]);
+  }, [isResizing, isMaximized]);
 
-  const handleSend = useCallback((text) => {
+  // Connection Handler
+  const handleVerifyConnect = async () => {
+    setVerifyError('');
+    
+    // 1. Format validation
+    const isValidFormat = validateKeyFormat(selectedProvider, apiKey);
+    if (!isValidFormat) {
+      let pref = '';
+      if (selectedProvider === 'openai') pref = "'sk-'";
+      if (selectedProvider === 'nvidia') pref = "'nvapi-'";
+      if (selectedProvider === 'groq') pref = "'gsk_'";
+      if (selectedProvider === 'claude') pref = "'sk-ant-'";
+      setVerifyError(`Invalid API Key format. Key must start with ${pref} and satisfy minimum length.`);
+      return;
+    }
+
+    // 2. Perform connection verification
+    setIsVerifying(true);
+    setSetupStep(3);
+
+    try {
+      const isSuccess = await testConnection(selectedProvider, apiKey);
+      if (isSuccess) {
+        // Connected successfully! Save locally
+        localStorage.setItem('selected_provider', selectedProvider);
+        localStorage.setItem('provider_api_key', apiKey.trim());
+        
+        setTimeout(() => {
+          setIsVerifying(false);
+          setIsConfigured(true);
+        }, 1500);
+      } else {
+        setIsVerifying(false);
+        setSetupStep(2);
+        setVerifyError('Invalid API Key. Please check your API key and try again.');
+      }
+    } catch (err) {
+      setIsVerifying(false);
+      setSetupStep(2);
+      setVerifyError('Verification failed due to a network connection issue. Please try again.');
+    }
+  };
+
+  // Chat send handler
+  const handleSend = useCallback(async (text) => {
     const textToSend = text || inputValue;
     if (!textToSend.trim()) return;
 
-    setMessages(prev => [...prev, { role: 'user', text: textToSend }]);
+    const userMsg = { role: 'user', text: textToSend };
+    setMessages(prev => [...prev, userMsg]);
     setInputValue('');
     setIsTyping(true);
 
-    // Context-aware query evaluation
-    let responseText = "I know you are studying " + (activeLesson?.title || 'JavaScript') + ". However, I'm currently working offline. Ask me to explain the concept, provide an analogy, or generate practice questions!";
-    const normText = textToSend.toLowerCase();
+    try {
+      const activeProvider = localStorage.getItem('selected_provider');
+      const activeKey = localStorage.getItem('provider_api_key');
 
-    const lessonKb = aiKnowledgeBase[activeLessonId] || aiKnowledgeBase['3'];
-
-    if (normText.includes('analogy') || normText.includes('backpack') || normText.includes('train')) {
-      responseText = lessonKb.analogy;
-    } else if (normText.includes('debug') || normText.includes('error') || normText.includes('bug')) {
-      responseText = lessonKb.debug;
-    } else if (normText.includes('practice') || normText.includes('exercise') || normText.includes('challenge')) {
-      responseText = lessonKb.practice;
-    } else if (normText.includes('summar') || normText.includes('takeaway') || normText.includes('short')) {
-      responseText = lessonKb.summary;
-    } else if (normText.includes('explain') || normText.includes('concept') || normText.includes('how')) {
-      responseText = lessonKb.explain;
-    } else if (normText.includes('interview') || normText.includes('question') || normText.includes('prep')) {
-      responseText = lessonKb.interview;
-    } else {
-      // General fallbacks based on keyword matches
-      if (normText.includes('variable') || normText.includes('data type') || normText.includes('primitive')) {
-        responseText = aiKnowledgeBase['2'].explain;
-      } else if (normText.includes('closure')) {
-        responseText = "A closure is when an inner function retains access to its lexical outer scope even after the outer function has returned. It carries its outer variables in a 'backpack' wherever it goes.";
-      } else if (normText.includes('loop') || normText.includes('control flow') || normText.includes('if')) {
-        responseText = aiKnowledgeBase['4'].explain;
-      } else if (normText.includes('operator') || normText.includes('expression')) {
-        responseText = aiKnowledgeBase['3'].explain;
+      if (!activeProvider || !activeKey) {
+        throw new Error('AI Provider not configured. Reset settings.');
       }
-    }
 
-    setTimeout(() => {
+      // Build system prompt using active lesson context
+      const systemPrompt = getSystemPrompt(lessonContext);
+
+      // Perform LLM API request
+      const responseText = await callAIProvider(activeProvider, activeKey, [...messages.slice(-8), userMsg], systemPrompt);
+      
       setIsTyping(false);
       setMessages(prev => [...prev, { role: 'ai', text: responseText }]);
-    }, 1200);
-  }, [inputValue, activeLessonId, activeLesson]);
+    } catch (err) {
+      console.error(err);
+      setIsTyping(false);
+      setMessages(prev => [...prev, { 
+        role: 'ai', 
+        text: `⚠️ **Error communicating with AI**: ${err.message || 'Unknown error'}. 
+
+Please check your network connection, verify that your API key is still valid, or click the ⚙️ icon in the header to re-configure.` 
+      }]);
+    }
+  }, [inputValue, messages, lessonContext]);
+
+  // Clean setup state
+  const handleResetSetup = () => {
+    localStorage.removeItem('selected_provider');
+    localStorage.removeItem('provider_api_key');
+    setIsConfigured(false);
+    setSetupStep(1);
+    setApiKey('');
+    setVerifyError('');
+  };
 
   // RENDER FLOATING ROBOT LAUNCHER
   if (!isOpen || isMinimized) {
@@ -219,17 +387,26 @@ export default function AITutor() {
         layoutId="ai-tutor-window"
         onClick={open}
         className="fixed right-6 bottom-6 z-[55] flex h-14 w-14 items-center justify-center rounded-full border border-accent bg-[#0f0a07] text-accent cursor-pointer shadow-[0_0_20px_rgba(249,115,22,0.3)] transition-all hover:scale-105 active:scale-95 group"
+        title="Open Codexa AI Tutor"
         aria-label="Ask AI Tutor"
       >
         <Bot className="h-6 w-6" />
         {/* Pulsing glow aura */}
         <span className="absolute inset-0 rounded-full border-2 border-accent animate-ping opacity-25 pointer-events-none" />
-        <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-accent text-[8px] font-bold text-white shadow-md animate-bounce">
+        <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-accent text-[8px] font-bold text-white shadow-md animate-bounce">
           AI
         </span>
       </motion.button>
     );
   }
+
+  // Provider configuration list
+  const providers = [
+    { id: 'openai', name: 'OpenAI', desc: 'GPT-4o-mini & GPT-4o model access', placeholder: 'sk-xxxxxxxx...' },
+    { id: 'nvidia', name: 'NVIDIA NIM', desc: 'Llama 3.1 & Nemotron endpoints', placeholder: 'nvapi-xxxxxxxx...' },
+    { id: 'groq', name: 'Groq Cloud', desc: 'Ultra-fast Llama-3 compiler engine', placeholder: 'gsk_xxxxxxxx...' },
+    { id: 'claude', name: 'Anthropic Claude', desc: 'Claude 3.5 Haiku & Sonnet reasoning', placeholder: 'sk-ant-xxxxxxxx...' }
+  ];
 
   return (
     <AnimatePresence>
@@ -242,10 +419,10 @@ export default function AITutor() {
         transition={{ duration: 0.22, ease: 'easeOut' }}
         className="fixed z-[55] flex flex-col overflow-hidden rounded-xl border border-border bg-[#0b0b0d] shadow-[0_12px_40px_rgba(0,0,0,0.6)] backdrop-blur-xl"
         style={{
-          left: position.x,
-          top: position.y,
-          width: size.w,
-          height: size.h,
+          left: isMaximized ? 16 : position.x,
+          top: isMaximized ? 64 : position.y, // Keep clean spacing with top nav
+          width: isMaximized ? window.innerWidth - 32 : size.w,
+          height: isMaximized ? window.innerHeight - 80 : size.h,
           cursor: isDragging ? 'grabbing' : 'auto',
         }}
         role="dialog"
@@ -256,33 +433,59 @@ export default function AITutor() {
           ref={dragRef}
           onMouseDown={onDragStart}
           onTouchStart={onDragStart}
-          className="flex shrink-0 items-center justify-between border-b border-border/60 bg-[#090a0d] px-4 py-3"
-          style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
+          className="flex shrink-0 items-center justify-between border-b border-border/60 bg-[#090a0d] px-4 py-3 select-none"
+          style={{ cursor: isDragging ? 'grabbing' : (isMaximized ? 'default' : 'grab') }}
         >
           <div className="flex items-center gap-2">
-            <GripVertical className="h-3.5 w-3.5 text-text-muted select-none" />
+            {!isMaximized && <GripVertical className="h-3.5 w-3.5 text-text-muted select-none" />}
             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-accent/10 border border-accent/20">
               <Bot className="h-4.5 w-4.5 text-accent" />
             </div>
             <div>
               <span className="text-xs font-bold text-text">AI Mentor</span>
-              <span className="ml-2 rounded-full bg-success/15 border border-success/30 px-2 py-0.2 text-[8px] uppercase font-bold tracking-wider text-success animate-pulse">
-                Online
-              </span>
+              {isConfigured ? (
+                <span className="ml-2 rounded-full bg-success/15 border border-success/30 px-2 py-0.2 text-[8px] uppercase font-bold tracking-wider text-success animate-pulse">
+                  Connected
+                </span>
+              ) : (
+                <span className="ml-2 rounded-full bg-warning/15 border border-warning/30 px-2 py-0.2 text-[8px] uppercase font-bold tracking-wider text-warning">
+                  Setup
+                </span>
+              )}
             </div>
           </div>
 
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
+            {isConfigured && (
+              <button
+                onClick={handleResetSetup}
+                className="flex h-7 w-7 items-center justify-center rounded-md text-text-muted hover:bg-bg-elevated hover:text-accent cursor-pointer transition-colors"
+                title="Change Provider / Reset Key"
+                aria-label="Configure AI Provider"
+              >
+                <Settings className="h-4 w-4" />
+              </button>
+            )}
+            <button
+              onClick={() => setIsMaximized(!isMaximized)}
+              className="flex h-7 w-7 items-center justify-center rounded-md text-text-muted hover:bg-bg-elevated hover:text-text cursor-pointer transition-colors"
+              title={isMaximized ? "Restore window" : "Maximize window"}
+              aria-label="Toggle full screen"
+            >
+              {isMaximized ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+            </button>
             <button
               onClick={minimize}
-              className="flex h-7 w-7 items-center justify-center rounded-md text-text-muted hover:bg-bg-elevated hover:text-text cursor-pointer"
+              className="flex h-7 w-7 items-center justify-center rounded-md text-text-muted hover:bg-bg-elevated hover:text-text cursor-pointer transition-colors"
+              title="Minimize window"
               aria-label="Minimize chatbot window"
             >
               <Minus className="h-4 w-4" />
             </button>
             <button
               onClick={close}
-              className="flex h-7 w-7 items-center justify-center rounded-md text-text-muted hover:bg-bg-elevated hover:text-text cursor-pointer"
+              className="flex h-7 w-7 items-center justify-center rounded-md text-text-muted hover:bg-bg-elevated hover:text-text cursor-pointer transition-colors"
+              title="Close window"
               aria-label="Close chatbot window"
             >
               <X className="h-4 w-4" />
@@ -290,119 +493,302 @@ export default function AITutor() {
           </div>
         </div>
 
-        {/* Current Lesson Banner */}
-        <div className="bg-bg-soft/40 px-4 py-2 border-b border-border/50 flex items-center justify-between text-[10px] text-text-muted font-semibold">
-          <span className="truncate">Context: {activeLesson?.title || 'JavaScript fundamentals'}</span>
-          <span className="text-accent shrink-0 font-mono">JS L{activeLessonId}</span>
-        </div>
+        {/* Outer Switch: First-time setup vs Active Chat */}
+        {!isConfigured ? (
+          <div className="flex-1 flex flex-col p-5 overflow-y-auto select-none bg-[#09090b]" data-lenis-prevent>
+            <AnimatePresence mode="wait">
+              
+              {/* STEP 1: SELECT PROVIDER */}
+              {setupStep === 1 && (
+                <motion.div
+                  key="setup-1"
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 10 }}
+                  className="flex flex-col flex-1"
+                >
+                  <div className="mb-4">
+                    <h3 className="text-sm font-bold text-text flex items-center gap-1.5">
+                      <Key className="h-4 w-4 text-accent" />
+                      Configure AI Tutor
+                    </h3>
+                    <p className="text-[11px] text-text-muted mt-1 leading-relaxed">
+                      Codexa features a provider-based local AI mentor. Choose your LLM engine to get started.
+                    </p>
+                  </div>
 
-        {/* Messages Body */}
-        <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin">
-          {messages.map((msg, i) => (
-            <div key={i} className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : ''}`}>
-              {msg.role === 'ai' && (
-                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent/15 border border-accent/25 mt-0.5">
-                  <Bot className="h-3.5 w-3.5 text-accent" />
+                  <div className="space-y-2 flex-1">
+                    {providers.map((p) => {
+                      const isSelected = selectedProvider === p.id;
+                      return (
+                        <div
+                          key={p.id}
+                          onClick={() => setSelectedProvider(p.id)}
+                          className={`relative flex items-start gap-3 rounded-lg border p-3 cursor-pointer transition-all duration-300 ${
+                            isSelected
+                              ? 'border-accent bg-accent/5 shadow-[0_0_15px_rgba(249,115,22,0.15)]'
+                              : 'border-border bg-bg-card hover:border-border-strong hover:bg-bg-elevated'
+                          }`}
+                        >
+                          <div className="flex-1">
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-xs font-semibold text-text">{p.name}</span>
+                              {isSelected && (
+                                <Check className="h-3.5 w-3.5 text-accent font-bold" />
+                              )}
+                            </div>
+                            <span className="text-[10px] text-text-muted mt-0.5 block">{p.desc}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <button
+                    onClick={() => setSetupStep(2)}
+                    className="mt-6 flex items-center justify-center gap-2 w-full rounded-lg bg-accent py-2.5 text-xs font-semibold text-white hover:bg-accent-deep transition-all cursor-pointer shadow-md shadow-accent/10 active:scale-98"
+                  >
+                    Continue
+                    <ArrowRight className="h-4 w-4" />
+                  </button>
+                </motion.div>
+              )}
+
+              {/* STEP 2: ENTER API KEY */}
+              {setupStep === 2 && (
+                <motion.div
+                  key="setup-2"
+                  initial={{ opacity: 0, x: 10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -10 }}
+                  className="flex flex-col flex-1 justify-between"
+                >
+                  <div>
+                    <div className="mb-4">
+                      <h3 className="text-sm font-bold text-text flex items-center gap-1.5">
+                        <Key className="h-4 w-4 text-accent" />
+                        Enter {providers.find(p => p.id === selectedProvider)?.name} API Key
+                      </h3>
+                      <p className="text-[11px] text-text-muted mt-1 leading-relaxed">
+                        API keys remain entirely on your local machine and are never shared. Fill a key below. Use <code className="bg-bg-elevated text-accent px-1 py-0.5 rounded text-[10px]">sk-mock-key</code> to demo locally.
+                      </p>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="relative">
+                        <input
+                          type={showKey ? "text" : "password"}
+                          value={apiKey}
+                          onChange={(e) => {
+                            setApiKey(e.target.value);
+                            setVerifyError('');
+                          }}
+                          placeholder={providers.find(p => p.id === selectedProvider)?.placeholder}
+                          className="w-full rounded-lg border border-border bg-bg-input px-3.5 py-2.5 text-xs text-text placeholder:text-text-muted outline-none focus:border-accent font-mono pr-10"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowKey(!showKey)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text cursor-pointer"
+                        >
+                          {showKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+
+                      {verifyError && (
+                        <div className="flex items-start gap-1.5 rounded-lg border border-red-900/35 bg-red-950/15 p-3 text-[10px] text-red-400 font-medium">
+                          <AlertCircle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+                          <span className="leading-relaxed">{verifyError}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2.5 mt-6">
+                    <button
+                      onClick={() => {
+                        setSetupStep(1);
+                        setVerifyError('');
+                      }}
+                      className="flex items-center justify-center gap-1.5 rounded-lg border border-border px-4 py-2.5 text-xs font-semibold text-text-secondary hover:bg-bg-elevated transition-colors cursor-pointer"
+                    >
+                      <ArrowLeft className="h-3.5 w-3.5" />
+                      Back
+                    </button>
+                    <button
+                      onClick={handleVerifyConnect}
+                      disabled={!apiKey.trim()}
+                      className="flex-1 flex items-center justify-center gap-1.5 rounded-lg bg-accent py-2.5 text-xs font-semibold text-white hover:bg-accent-deep disabled:opacity-50 disabled:pointer-events-none transition-colors cursor-pointer shadow-md shadow-accent/10"
+                    >
+                      Connect
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+
+              {/* STEP 3: VERIFY CONNECTION */}
+              {setupStep === 3 && (
+                <motion.div
+                  key="setup-3"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="flex flex-col flex-1 items-center justify-center text-center py-12"
+                >
+                  {isVerifying ? (
+                    <div className="flex flex-col items-center gap-4">
+                      <div className="h-10 w-10 animate-spin rounded-full border-2 border-border border-t-accent" />
+                      <div>
+                        <span className="text-xs font-bold text-text">Testing Endpoint Connection...</span>
+                        <p className="text-[10px] text-text-muted mt-1">
+                          Verifying key with {providers.find(p => p.id === selectedProvider)?.name} servers.
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-4">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-success/10 border border-success/30 text-success">
+                        <Check className="h-6 w-6" />
+                      </div>
+                      <div>
+                        <span className="text-xs font-bold text-text">Connected Successfully</span>
+                        <p className="text-[10px] text-text-muted mt-1">
+                          Your local mentor is ready. Loading workspace...
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </motion.div>
+              )}
+
+            </AnimatePresence>
+          </div>
+        ) : (
+          /* ACTIVE CHAT WORKSPACE */
+          <>
+            {/* Context Header */}
+            {lessonContext && (
+              <div className="bg-bg-soft/40 px-4 py-2 border-b border-border/50 flex items-center justify-between text-[10px] text-text-muted font-semibold select-none">
+                <span className="truncate">Active Context: {lessonContext.title || 'JavaScript Fundamentals'}</span>
+                <span className="text-accent shrink-0 font-mono">JS L{lessonContext.moduleId || '1'}</span>
+              </div>
+            )}
+
+            {/* Chat Messages Screen */}
+            <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin" data-lenis-prevent>
+              {messages.map((msg, i) => (
+                <div key={i} className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : ''}`}>
+                  {msg.role === 'ai' && (
+                    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent/15 border border-accent/25 mt-0.5">
+                      <Bot className="h-3.5 w-3.5 text-accent" />
+                    </div>
+                  )}
+                  <div
+                    className={`max-w-[85%] rounded-xl px-4 py-2.5 text-xs leading-relaxed ${
+                      msg.role === 'user'
+                        ? 'rounded-tr-none bg-accent/10 border border-accent/20 text-text text-left'
+                        : 'rounded-tl-none bg-bg-card border border-border/40 text-text-secondary text-left'
+                    }`}
+                  >
+                    {/* Render message formatting segments */}
+                    {msg.role === 'ai' ? (
+                      parseMessageContent(msg.text).map((part, index) => {
+                        if (part.type === 'code') {
+                          return (
+                            <AITutorCodeBlock
+                              key={index}
+                              code={part.content}
+                              language={part.language}
+                            />
+                          );
+                        } else {
+                          const html = marked.parse(part.content);
+                          return (
+                            <div
+                              key={index}
+                              dangerouslySetInnerHTML={{ __html: html }}
+                              className="prose prose-invert max-w-none text-xs leading-relaxed whitespace-pre-wrap prose-p:my-1 prose-ul:my-1 prose-li:my-0.5 prose-strong:text-accent prose-code:bg-bg-elevated prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-[11px] prose-code:before:content-none prose-code:after:content-none"
+                            />
+                          );
+                        }
+                      })
+                    ) : (
+                      <span className="whitespace-pre-wrap">{msg.text}</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+
+              {/* AI Typing Indicator */}
+              {isTyping && (
+                <div className="flex gap-3">
+                  <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent/15 border border-accent/25 mt-0.5">
+                    <Bot className="h-3.5 w-3.5 text-accent" />
+                  </div>
+                  <div className="rounded-xl px-4 py-2.5 bg-bg-card border border-border/40 flex items-center gap-1">
+                    <span className="h-1.5 w-1.5 rounded-full bg-text-muted animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <span className="h-1.5 w-1.5 rounded-full bg-text-muted animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <span className="h-1.5 w-1.5 rounded-full bg-text-muted animate-bounce" style={{ animationDelay: '300ms' }} />
+                  </div>
                 </div>
               )}
-              <div
-                className={`max-w-[85%] rounded-xl px-4 py-2.5 text-xs leading-relaxed ${
-                  msg.role === 'user'
-                    ? 'rounded-tr-none bg-accent/10 border border-accent/20 text-text'
-                    : 'rounded-tl-none bg-bg-card border border-border/40 text-text-secondary whitespace-pre-wrap'
-                }`}
-              >
-                {msg.text}
+            </div>
+
+            {/* Quick Actions Scroll Bar */}
+            <div className="bg-[#090a0d] py-2 px-3 border-t border-border/50 select-none">
+              <span className="text-[8px] font-bold text-text-muted uppercase tracking-wider block mb-1.5">Quick Actions:</span>
+              <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none pr-2">
+                {quickActions.map((action, i) => (
+                  <button
+                    key={i}
+                    onClick={() => handleSend(action.prompt)}
+                    className="shrink-0 rounded-md border border-border bg-bg-input px-2.5 py-1 text-[9px] font-medium text-text-secondary transition-colors hover:border-accent/40 hover:text-text hover:bg-accent/5 cursor-pointer"
+                  >
+                    {action.label}
+                  </button>
+                ))}
               </div>
             </div>
-          ))}
 
-          {/* AI Typing Indicator */}
-          {isTyping && (
-            <div className="flex gap-3">
-              <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent/15 border border-accent/25 mt-0.5">
-                <Bot className="h-3.5 w-3.5 text-accent" />
-              </div>
-              <div className="rounded-xl px-4 py-2.5 bg-bg-card border border-border/40 flex items-center gap-1">
-                <span className="h-1.5 w-1.5 rounded-full bg-text-muted animate-bounce" style={{ animationDelay: '0ms' }} />
-                <span className="h-1.5 w-1.5 rounded-full bg-text-muted animate-bounce" style={{ animationDelay: '150ms' }} />
-                <span className="h-1.5 w-1.5 rounded-full bg-text-muted animate-bounce" style={{ animationDelay: '300ms' }} />
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Suggested Doubts */}
-        <div className="bg-[#090a0d] p-3 border-t border-border/50">
-          <span className="text-[9px] font-bold text-text-muted uppercase tracking-wider block mb-2">Suggested Doubts:</span>
-          <div className="flex flex-wrap gap-1.5 max-h-20 overflow-y-auto pr-1">
-            {suggestedPrompts.map((prompt, i) => (
+            {/* User Query Form */}
+            <form
+              onSubmit={(e) => { e.preventDefault(); handleSend(); }}
+              className="shrink-0 border-t border-border/60 bg-[#08080a] p-3 flex gap-2"
+            >
+              <input
+                type="text"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                placeholder={isTyping ? "AI is reasoning..." : "Ask your AI mentor a doubt..."}
+                disabled={isTyping}
+                className="flex-1 rounded-lg border border-border bg-bg-input px-3.5 py-2 text-xs text-text placeholder:text-text-muted outline-none focus:border-accent disabled:opacity-50"
+              />
               <button
-                key={i}
-                onClick={() => {
-                  const lessonKb = aiKnowledgeBase[activeLessonId] || aiKnowledgeBase['3'];
-                  let query = '';
-                  switch (prompt.type) {
-                    case 'explain': query = `Explain ${activeLesson?.title || 'this concept'} dynamically.`; break;
-                    case 'analogy': query = `Give me a real-world analogy for ${activeLesson?.title || 'this concept'}.`; break;
-                    case 'summary': query = `Summarize this lesson for quick revision.`; break;
-                    case 'interview': query = `Give me an interview question about this lesson.`; break;
-                    case 'practice': query = `Generate a practice coding challenge for me.`; break;
-                    case 'debug': query = `How do I debug syntax errors or reference issues in this code?`; break;
-                  }
-                  handleSend(query);
-                }}
-                className="rounded-md border border-border bg-bg-input px-2.5 py-1 text-[10px] text-text-secondary transition-colors hover:border-accent/40 hover:text-text hover:bg-accent/5 cursor-pointer"
+                type="submit"
+                disabled={isTyping || !inputValue.trim()}
+                className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent text-white hover:bg-accent-deep active:scale-95 disabled:opacity-40 disabled:pointer-events-none transition-all cursor-pointer shrink-0"
+                aria-label="Submit query"
               >
-                {prompt.label}
+                <Send className="h-4 w-4" />
               </button>
-            ))}
-          </div>
-        </div>
+            </form>
 
-        {/* User Input Form */}
-        <form
-          onSubmit={(e) => { e.preventDefault(); handleSend(); }}
-          className="shrink-0 border-t border-border/60 bg-[#08080a] p-3 flex gap-2"
-        >
-          <input
-            type="text"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            placeholder="Ask AI Mentor a doubt..."
-            className="flex-1 rounded-lg border border-border bg-bg-input px-3.5 py-2 text-xs text-text placeholder:text-text-muted outline-none focus:border-accent"
-          />
-          <button
-            type="submit"
-            className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent text-white hover:bg-accent-deep active:scale-95 transition-all cursor-pointer"
-            aria-label="Submit query"
-          >
-            <SendIcon className="h-4.5 w-4.5" />
-          </button>
-        </form>
-
-        {/* Resizer control */}
-        <div
-          onMouseDown={onResizeStart}
-          onTouchStart={onResizeStart}
-          className="absolute right-0 bottom-0 h-4 w-4 cursor-se-resize flex items-end justify-end p-0.5"
-          aria-hidden="true"
-        >
-          <svg width="8" height="8" className="text-text-muted/40" viewBox="0 0 10 10">
-            <path d="M9 1L1 9M9 5L5 9M9 9L9 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-          </svg>
-        </div>
+            {/* Resizer anchor (disable when maximized) */}
+            {!isMaximized && (
+              <div
+                onMouseDown={onResizeStart}
+                onTouchStart={onResizeStart}
+                className="absolute right-0 bottom-0 h-4 w-4 cursor-se-resize flex items-end justify-end p-0.5"
+                aria-hidden="true"
+              >
+                <svg width="8" height="8" className="text-text-muted/40" viewBox="0 0 10 10">
+                  <path d="M9 1L1 9M9 5L5 9M9 9L9 9" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                </svg>
+              </div>
+            )}
+          </>
+        )}
       </motion.div>
     </AnimatePresence>
-  );
-}
-
-// Simple Send icon
-function SendIcon(props) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <line x1="22" y1="2" x2="11" y2="13" />
-      <polygon points="22 2 15 22 11 13 2 9 22 2" />
-    </svg>
   );
 }

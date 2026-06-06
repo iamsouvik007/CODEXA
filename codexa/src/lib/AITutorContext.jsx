@@ -1,10 +1,11 @@
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback, useMemo } from 'react';
 
 const AITutorContext = createContext(null);
 
 export function AITutorProvider({ children }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
+  const [lessonContext, setLessonContext] = useState(null);
 
   const open = useCallback(() => {
     setIsOpen(true);
@@ -32,8 +33,20 @@ export function AITutorProvider({ children }) {
     setIsMinimized(false);
   }, []);
 
+  const value = useMemo(() => ({
+    isOpen,
+    isMinimized,
+    open,
+    close,
+    toggle,
+    minimize,
+    restore,
+    lessonContext,
+    setLessonContext
+  }), [isOpen, isMinimized, open, close, toggle, minimize, restore, lessonContext]);
+
   return (
-    <AITutorContext.Provider value={{ isOpen, isMinimized, open, close, toggle, minimize, restore }}>
+    <AITutorContext.Provider value={value}>
       {children}
     </AITutorContext.Provider>
   );
