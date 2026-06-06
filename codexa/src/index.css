@@ -220,36 +220,42 @@
   code {
     font-family: var(--font-mono);
     font-size: 0.85em;
-    background: rgba(255, 255, 255, 0.06);
-    padding: 0.15em 0.4em;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.15em 0.35em;
     border-radius: 4px;
     color: var(--color-accent-soft);
+    border: 1px solid rgba(255, 255, 255, 0.06);
   }
 
   pre {
-    background: #0d0d11;
+    background: #0f1117;
     border-radius: 8px;
-    padding: 1em;
+    padding: 1.1em;
     overflow-x: auto;
     margin: 0.75em 0;
     font-family: var(--font-mono);
     font-size: 13px;
-    line-height: 1.6;
+    line-height: 1.65;
+    border: 1px solid #1e222b;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.02);
   }
 
   pre code {
     background: none;
     padding: 0;
-    color: #d4d4d8;
+    color: #abb2bf;
     font-size: inherit;
+    border: none;
   }
 
   blockquote {
     border-left: 3px solid var(--color-accent);
-    padding-left: 1em;
+    background: rgba(249, 115, 22, 0.03);
+    padding: 0.75em 1em;
     margin: 1em 0;
     color: var(--color-text-secondary);
     font-style: italic;
+    border-radius: 0 6px 6px 0;
   }
 
   hr {
@@ -262,6 +268,104 @@
     max-width: 100%;
     border-radius: 8px;
   }
+}
+
+/* ─── Highlight.js Syntax Theme ─── */
+.hljs {
+  color: #abb2bf;
+}
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-doctag,
+.hljs-meta .hljs-keyword {
+  color: #c678dd; /* Purple */
+  font-weight: bold;
+}
+.hljs-title,
+.hljs-title.function_ {
+  color: #61afef; /* Blue */
+}
+.hljs-variable,
+.hljs-property,
+.hljs-attr,
+.hljs-params,
+.hljs-attribute {
+  color: #56b6c2; /* Cyan */
+}
+.hljs-string {
+  color: #98c379; /* Green */
+}
+.hljs-number,
+.hljs-literal {
+  color: #d19a66; /* Amber/Orange */
+}
+.hljs-class,
+.hljs-title.class_,
+.hljs-built_in,
+.hljs-type {
+  color: #e5c07b; /* Yellow */
+}
+.hljs-comment,
+.hljs-quote {
+  color: #5c6370; /* Muted Gray */
+  font-style: italic;
+}
+.hljs-operator,
+.hljs-punctuation,
+.hljs-subst {
+  color: #ffffff; /* White */
+}
+.hljs-regexp {
+  color: #fca5a5;
+}
+.hljs-addition {
+  color: #98c379;
+  background: rgba(34, 197, 94, 0.1);
+}
+.hljs-deletion {
+  color: #fca5a5;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+
+/* ─── Card-Specific Color-Coded Prose Contexts ─── */
+.border-orange-500\/15 .prose-codexa,
+.border-orange-500\/25 .prose-codexa {
+  strong { color: var(--color-accent); }
+  code { color: #ff914d; background: rgba(249, 115, 22, 0.07); border-color: rgba(249, 115, 22, 0.2); }
+  ul > li::marker { color: var(--color-accent); }
+}
+
+.border-red-500\/15 .prose-codexa,
+.border-red-500\/25 .prose-codexa {
+  strong { color: #f87171; }
+  code { color: #f87171; background: rgba(239, 68, 68, 0.08); border-color: rgba(239, 68, 68, 0.2); }
+  ul > li::marker { color: #f87171; }
+}
+
+.border-warning\/20 .prose-codexa {
+  strong { color: var(--color-warning); }
+  code { color: #fef08a; background: rgba(234, 179, 8, 0.08); border-color: rgba(234, 179, 8, 0.2); }
+  ul > li::marker { color: var(--color-warning); }
+}
+
+.border-purple-500\/25 .prose-codexa {
+  strong { color: #c084fc; }
+  code { color: #c084fc; background: rgba(168, 85, 247, 0.08); border-color: rgba(168, 85, 247, 0.2); }
+  ul > li::marker { color: #c084fc; }
+}
+
+.border-pink-500\/15 .prose-codexa,
+.border-pink-500\/25 .prose-codexa {
+  strong { color: #f472b6; }
+  code { color: #f472b6; background: rgba(236, 72, 153, 0.08); border-color: rgba(236, 72, 153, 0.2); }
+  ul > li::marker { color: #f472b6; }
+}
+
+.border-cyan-500\/25 .prose-codexa {
+  strong { color: #22d3ee; }
+  code { color: #22d3ee; background: rgba(6, 182, 212, 0.08); border-color: rgba(6, 182, 212, 0.2); }
+  ul > li::marker { color: #22d3ee; }
 }
 
 /* ─── Data table styles ─── */
@@ -308,83 +412,7 @@
   color: var(--color-accent-soft);
 }
 
-/* ─── Highlight.js dark theme (adapted) ─── */
-.hljs {
-  color: #d4d4d8;
-}
-
-.hljs-keyword,
-.hljs-selector-tag,
-.hljs-literal,
-.hljs-section,
-.hljs-link {
-  color: #c084fc;
-}
-
-.hljs-function .hljs-keyword {
-  color: #c084fc;
-}
-
-.hljs-string,
-.hljs-title.function_,
-.hljs-title.class_ {
-  color: #86efac;
-}
-
-.hljs-attr,
-.hljs-attribute,
-.hljs-variable,
-.hljs-template-variable,
-.hljs-class .hljs-title,
-.hljs-type {
-  color: #93c5fd;
-}
-
-.hljs-number,
-.hljs-symbol,
-.hljs-bullet {
-  color: #fbbf24;
-}
-
-.hljs-comment,
-.hljs-quote,
-.hljs-doctag {
-  color: #6b7280;
-  font-style: italic;
-}
-
-.hljs-meta,
-.hljs-meta .hljs-keyword,
-.hljs-tag {
-  color: #f87171;
-}
-
-.hljs-built_in,
-.hljs-title {
-  color: #67e8f9;
-}
-
-.hljs-params {
-  color: #d4d4d8;
-}
-
-.hljs-subst {
-  color: #d4d4d8;
-}
-
-.hljs-regexp {
-  color: #fca5a5;
-}
-
-.hljs-addition {
-  color: #86efac;
-  background: rgba(34, 197, 94, 0.1);
-}
-
-.hljs-deletion {
-  color: #fca5a5;
-  background: rgba(239, 68, 68, 0.1);
-}
+/* Consolidated Highlight.js dark theme */
 
 /* ─── Shake animation for wrong quiz answers ─── */
 @keyframes shake {

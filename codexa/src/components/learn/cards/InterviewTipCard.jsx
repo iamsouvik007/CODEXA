@@ -20,8 +20,7 @@ export default function InterviewTipCard({ section, index }) {
     <motion.div
       variants={scaleUp}
       initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, amount: 0.15 }}
+      animate="visible"
       className="rounded-xl border border-purple-500/25 bg-[#0a080d] p-6 shadow-[0_0_20px_rgba(168,85,247,0.02)]"
     >
       <div className="mb-4 flex items-center justify-between">

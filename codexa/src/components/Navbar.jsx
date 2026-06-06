@@ -88,15 +88,14 @@ export default function Navbar({ onOpenModal }) {
         Skip to main content
       </a>
       <header
-        className={`fixed top-0 right-0 left-0 z-50 transition-all duration-300 ${
-          scrolled
+        className={`fixed top-0 right-0 left-0 z-50 transition-all duration-300 ${scrolled
             ? 'border-b border-border bg-bg/80 backdrop-blur-xl'
             : 'bg-transparent'
-        }`}
+          }`}
       >
         <nav className="mx-auto flex h-16 max-w-[1200px] items-center justify-between px-5 sm:px-8" aria-label="Main navigation">
           {/* Logo */}
-          <a href="#main-content" onClick={(e) => handleNavClick(e, {href: '#main-content'})} className="flex items-center gap-2.5 text-text" aria-label="Codexa home">
+          <a href="#main-content" onClick={(e) => handleNavClick(e, { href: '#main-content' })} className="flex items-center gap-2.5 text-text" aria-label="Codexa home">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent">
               <Sparkles className="h-4 w-4 text-white" aria-hidden="true" />
             </div>
@@ -178,15 +177,8 @@ export default function Navbar({ onOpenModal }) {
           {/* Desktop CTA */}
           <div className="hidden items-center gap-4 lg:flex">
             <a
-              href="#roadmap"
-              onClick={(e) => handleNavClick(e, {href: '#roadmap'})}
-              className="group relative rounded-pill border border-border px-5 py-2 text-sm font-medium text-text-secondary transition-all duration-300 hover:-translate-y-0.5 hover:border-border-strong hover:text-text"
-            >
-              Explore Curriculum
-            </a>
-            <a
               href="/learn"
-              onClick={(e) => handleNavClick(e, {href: '/learn'})}
+              onClick={(e) => handleNavClick(e, { href: '/learn' })}
               className="group relative rounded-pill bg-accent px-5 py-2 text-sm font-medium text-white transition-all duration-300 hover:-translate-y-0.5 hover:bg-accent-deep hover:shadow-glow"
             >
               Start Learning
@@ -241,20 +233,20 @@ export default function Navbar({ onOpenModal }) {
               >
                 <div className="text-sm font-semibold text-text uppercase tracking-wider">Interview</div>
                 {interviewItems.map((item, i) => (
-                   <button
-                   key={i}
-                   onClick={(e) => handleNavClick(e, { modal: item.modal })}
-                   className="flex items-center gap-3 text-left transition-colors hover:text-text text-text-secondary"
-                 >
-                   <item.icon className="h-4 w-4 text-accent" />
-                   <span className="font-medium">{item.title}</span>
-                 </button>
+                  <button
+                    key={i}
+                    onClick={(e) => handleNavClick(e, { modal: item.modal })}
+                    className="flex items-center gap-3 text-left transition-colors hover:text-text text-text-secondary"
+                  >
+                    <item.icon className="h-4 w-4 text-accent" />
+                    <span className="font-medium">{item.title}</span>
+                  </button>
                 ))}
               </motion.div>
 
               <motion.a
                 href="/learn"
-                onClick={(e) => handleNavClick(e, {href: '/learn'})}
+                onClick={(e) => handleNavClick(e, { href: '/learn' })}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}

@@ -5,8 +5,7 @@ export default function WarningCard({ section, index }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.15 }}
+      animate={{ opacity: 1, y: 0 }}
       className="rounded-xl border border-warning/20 bg-warning/5 p-6 shadow-card"
     >
       <div className="mb-3 flex items-center gap-2">

@@ -23,8 +23,7 @@ export default function LearningResourcesCard({ section, index }) {
     <motion.div
       variants={scaleUp}
       initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, amount: 0.15 }}
+      animate="visible"
       className="rounded-xl border border-border bg-[#0b0b0d] p-6 shadow-card"
     >
       <div className="mb-6 flex items-center justify-between">

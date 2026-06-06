@@ -94,7 +94,7 @@ export default function LessonView({ lesson, onOpenModal }) {
       </div>
 
       {/* Lesson header */}
-      <header className="border-b border-border bg-bg/80 backdrop-blur-xl">
+      <header className="border-b border-border bg-bg/85 backdrop-blur-xl">
         <div className="mx-auto max-w-4xl px-5 py-6 sm:px-8">
           {/* Breadcrumb */}
           <div className="mb-3 flex items-center gap-1.5 text-xs text-text-muted">

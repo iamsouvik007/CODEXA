@@ -89,13 +89,12 @@ export default function CodeBlock({ code, language = 'javascript', section }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.15 }}
+      animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="overflow-hidden rounded-xl border border-border bg-[#0d0d11] shadow-card"
+      className="overflow-hidden rounded-xl border border-[#1e222b] bg-[#0f1117] shadow-card"
     >
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-border/50 px-4 py-2">
+      <div className="flex items-center justify-between border-b border-[#1e222b] px-4 py-2">
         <div className="flex items-center gap-2">
           <div className="flex gap-1.5">
             <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" />
@@ -153,7 +152,7 @@ export default function CodeBlock({ code, language = 'javascript', section }) {
             exit={{ height: 0, opacity: 0 }}
             className="overflow-hidden border-t border-border/50"
           >
-            <div className="flex items-center justify-between bg-[#0a0a0d] px-4 py-1.5">
+            <div className="flex items-center justify-between bg-[#0c0d12] px-4 py-1.5">
               <div className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider text-text-muted">
                 <Terminal className="h-3 w-3" />
                 Console
@@ -162,7 +161,7 @@ export default function CodeBlock({ code, language = 'javascript', section }) {
                 Clear
               </button>
             </div>
-            <div className="bg-[#0a0a0d] p-4 font-mono text-[13px] leading-6">
+            <div className="bg-[#0c0d12] p-4 font-mono text-[13px] leading-6">
               {consoleOutput.map((line, i) => (
                 <div key={i} className={`${
                   line.type === 'error' ? 'text-red-400' :

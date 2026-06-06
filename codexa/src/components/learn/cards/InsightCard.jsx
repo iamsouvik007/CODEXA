@@ -5,8 +5,7 @@ export default function InsightCard({ section, index }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.15 }}
+      animate={{ opacity: 1, y: 0 }}
       className="relative rounded-xl border-l-4 border-accent bg-bg-card p-6 shadow-card"
     >
       <Quote className="absolute top-4 right-4 h-6 w-6 text-accent/20" />

@@ -5,8 +5,7 @@ export default function MisconceptionCard({ section, index }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.15 }}
+      animate={{ opacity: 1, y: 0 }}
       className="overflow-hidden rounded-xl border border-red-500/15 bg-[#0e0809] shadow-card hover:border-red-500/25 transition-all"
     >
       <div className="flex items-center gap-2 border-b border-border/50 px-6 py-3 bg-red-950/10">

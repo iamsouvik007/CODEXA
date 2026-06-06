@@ -5,8 +5,7 @@ export default function SummaryCard({ section, index }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.15 }}
+      animate={{ opacity: 1, y: 0 }}
       className="rounded-xl border border-pink-500/15 bg-[#0e080b] p-6 shadow-[0_0_25px_rgba(236,72,153,0.02)] hover:border-pink-500/25 transition-all"
     >
       <div className="mb-3 flex items-center gap-2">

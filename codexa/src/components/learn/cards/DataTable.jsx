@@ -4,8 +4,7 @@ export default function DataTable({ html }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.15 }}
+      animate={{ opacity: 1, y: 0 }}
       className="overflow-hidden rounded-xl border border-border bg-bg-card shadow-card"
     >
       <div

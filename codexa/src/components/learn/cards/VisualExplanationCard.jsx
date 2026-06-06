@@ -36,8 +36,7 @@ export default function VisualExplanationCard({ section, index }) {
     <motion.div
       variants={scaleUp}
       initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, amount: 0.15 }}
+      animate="visible"
       className="rounded-xl border border-cyan-500/25 bg-[#0b0c10] p-6 shadow-[0_0_25px_rgba(6,182,212,0.03)]"
     >
       <div className="mb-6 flex items-center gap-2">
@@ -59,8 +58,7 @@ export default function VisualExplanationCard({ section, index }) {
             <motion.div
               key={idx}
               initial={{ opacity: 0, x: -10 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
+              animate={{ opacity: 1, x: 0 }}
               transition={{ delay: idx * 0.1 }}
               className="relative flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl border border-border/40 bg-bg-card/75 backdrop-blur-md shadow-card hover:border-cyan-500/35 transition-all group"
             >

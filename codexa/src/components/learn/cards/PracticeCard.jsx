@@ -56,9 +56,7 @@ export default function PracticeCard({ section, index }) {
     <motion.div
       variants={scaleUp}
       initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, amount: 0.15 }}
-      animate={shake ? { x: [-10, 10, -10, 10, 0] } : {}}
+      animate={shake ? { x: [-10, 10, -10, 10, 0] } : "visible"}
       transition={shake ? { duration: 0.4 } : { duration: 0.3 }}
       className="rounded-xl border border-success/20 bg-[#080d0a] p-6 shadow-[0_0_20px_rgba(34,197,94,0.02)]"
     >

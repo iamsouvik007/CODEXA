@@ -6,8 +6,7 @@ export default function ConceptCard({ section, index }) {
     <motion.div
       variants={fadeUp}
       initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, amount: 0.15 }}
+      animate="visible"
       className="rounded-xl border border-orange-500/15 bg-[#0c0a09] p-6 shadow-[0_0_25px_rgba(249,115,22,0.03)] hover:border-orange-500/25 transition-all"
     >
       {section.heading && (

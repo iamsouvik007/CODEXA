@@ -5,8 +5,7 @@ export default function AnalogyCard({ section, index }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.15 }}
+      animate={{ opacity: 1, y: 0 }}
       className="relative overflow-hidden rounded-xl border border-accent/20 bg-gradient-to-br from-accent/5 via-bg-card to-bg-card p-6 shadow-card"
     >
       <div className="absolute top-4 right-4 flex h-8 w-8 items-center justify-center rounded-lg bg-accent/10">

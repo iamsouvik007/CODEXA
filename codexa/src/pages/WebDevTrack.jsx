@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Menu, Bot, Terminal, Award, BookOpen, Flame, Compass } from 'lucide-react';
+import { Menu, Bot, Terminal, Award, BookOpen, Flame, Compass, Home } from 'lucide-react';
 import { getLessonById, getAllLessons, getNextLesson, getPrevLesson } from '../lib/lessonData';
 import { useProgress } from '../lib/ProgressContext';
 import { useAITutor } from '../lib/AITutorContext';
@@ -125,12 +125,21 @@ export default function WebDevTrack() {
       </AnimatePresence>
 
       {/* 2. Middle Content Panel (Mac shell wrapper) */}
-      <main className="flex-1 flex flex-col min-w-0 bg-[#08080a] border-r border-border/40">
+      <main className="flex-1 flex flex-col min-w-0 bg-[#08080a]">
         
         {/* Mac OS Simulated Title Bar Header */}
         <div className="sticky top-0 z-30 flex flex-wrap items-center justify-between border-b border-border/50 bg-[#0a0a0d] px-4 py-2.5 backdrop-blur-md">
           {/* Controls */}
           <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate('/')}
+              className="flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-text-secondary transition-colors hover:bg-bg-elevated hover:text-text cursor-pointer"
+              aria-label="Go to landing page"
+            >
+              <Home className="h-3.5 w-3.5 text-accent" />
+              <span className="hidden xs:inline">Home</span>
+            </button>
+
             <button
               onClick={() => setSidebarOpen(true)}
               className="flex h-7 w-7 items-center justify-center rounded-md border border-border text-text-secondary transition-colors hover:bg-bg-elevated hover:text-text lg:hidden shrink-0"
@@ -154,8 +163,8 @@ export default function WebDevTrack() {
           <div className="flex items-center gap-1 bg-[#141419] border border-border/40 rounded-lg p-0.5 select-none">
             {[
               { id: 'lesson', label: 'Lesson', icon: BookOpen },
-              { id: 'practice', label: 'Code', icon: Terminal },
-              { id: 'quiz', label: 'Quizzes', icon: Award },
+              { id: 'practice', label: 'Practice', icon: Terminal },
+              { id: 'quiz', label: 'Quiz', icon: Award },
               { id: 'dashboard', label: 'Dashboard', icon: Flame }
             ].map(tab => {
               const TabIcon = tab.icon;
@@ -212,40 +221,6 @@ export default function WebDevTrack() {
           </AnimatePresence>
         </div>
       </main>
-
-      {/* 3. Right Sidebar Explorer (AI Mentor panel - Desktop Only) */}
-      <aside className="hidden xl:flex w-[300px] flex-col border-l border-border/40 bg-[#09090b] p-5 shrink-0 select-none">
-        <div className="flex items-center justify-between border-b border-border/40 pb-4 mb-5">
-          <div className="flex items-center gap-2">
-            <Bot className="h-4.5 w-4.5 text-accent" />
-            <h4 className="font-heading text-xs font-bold uppercase tracking-wider text-text">AI Mentor</h4>
-          </div>
-          <span className="rounded-full bg-success/15 border border-success/35 px-2 py-0.2 text-[8px] uppercase font-bold tracking-wider text-success">
-            Online
-          </span>
-        </div>
-
-        <p className="text-[11px] text-text-secondary leading-relaxed mb-6">
-          Suggested doubt inquiries for <b>{activeLesson?.title || 'JavaScript'}</b>:
-        </p>
-
-        {/* Suggested Doubts */}
-        <div className="flex-1 flex flex-col gap-2 overflow-y-auto pr-1 scrollbar-thin">
-          {currentQuestions.map((question, i) => (
-            <button
-              key={i}
-              onClick={() => open()}
-              className="text-left text-xs p-3 rounded-lg border border-border bg-[#0b0c10]/40 hover:border-accent/30 hover:bg-accent/5 text-text-secondary hover:text-text transition-all leading-snug cursor-pointer group"
-            >
-              {question}
-              <span className="block text-[9px] text-accent font-semibold mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                Ask Mentor →
-              </span>
-            </button>
-          ))}
-        </div>
-      </aside>
-
     </div>
   );
 }
