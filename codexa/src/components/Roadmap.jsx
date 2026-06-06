@@ -19,6 +19,13 @@ const roadmapItems = [
     lessons: 90,
   },
   {
+    title: 'Backend Engineering',
+    status: 'coming',
+    desc: 'Node.js, Express, Databases, Authentication, APIs, Architecture.',
+    topics: 20,
+    lessons: 100,
+  },
+  {
     title: 'System Design',
     status: 'coming',
     desc: 'Architecture patterns, scalability, databases, caching, load balancing.',
@@ -26,22 +33,15 @@ const roadmapItems = [
     lessons: 75,
   },
   {
-    title: 'Backend Engineering',
-    status: 'planned',
-    desc: 'Node.js, Express, Databases, Authentication, APIs, Architecture.',
-    topics: 20,
-    lessons: 100,
-  },
-  {
     title: 'DevOps',
-    status: 'planned',
+    status: 'coming',
     desc: 'CI/CD, Docker, Kubernetes, monitoring, cloud infrastructure.',
     topics: 12,
     lessons: 60,
   },
   {
     title: 'GenAI for Developers',
-    status: 'planned',
+    status: 'coming',
     desc: 'Prompt engineering, RAG, fine-tuning, AI-assisted development.',
     topics: 10,
     lessons: 50,

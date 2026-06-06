@@ -74,4 +74,4 @@ This project is optimized for deployment on Vercel. A `vercel.json` file is alre
 3. Deploy!
 
 ---
-*Built with passion for developers.*
+*Built with ❤️ by Souvik.*

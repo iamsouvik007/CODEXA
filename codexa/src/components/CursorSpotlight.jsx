@@ -22,7 +22,14 @@ export default function CursorSpotlight() {
 
     const handleMouseMove = (e) => {
       posRef.current = { x: e.clientX, y: e.clientY };
-      if (!isVisible) setIsVisible(true);
+      if (!isVisible) {
+        // Snap to the cursor immediately on the first move to avoid it flying in from the corner
+        currentRef.current = { x: e.clientX, y: e.clientY };
+        if (spotRef.current) {
+          spotRef.current.style.transform = `translate(${e.clientX - 300}px, ${e.clientY - 300}px)`;
+        }
+        setIsVisible(true);
+      }
     };
 
     const handleMouseLeave = () => {
@@ -60,7 +67,7 @@ export default function CursorSpotlight() {
   return (
     <div
       ref={spotRef}
-      className="pointer-events-none fixed top-0 left-0 z-[1] h-[600px] w-[600px] rounded-full transition-opacity duration-500"
+      className="pointer-events-none fixed top-0 left-0 z-[1] h-[600px] w-[600px] rounded-full"
       style={{
         background: 'radial-gradient(circle, rgba(249, 115, 22, 0.06) 0%, rgba(249, 115, 22, 0.02) 40%, transparent 70%)',
         opacity: isVisible ? 1 : 0,

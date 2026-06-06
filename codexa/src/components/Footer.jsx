@@ -102,7 +102,7 @@ export default function Footer() {
             © {new Date().getFullYear()} Codexa. All rights reserved.
           </p>
           <p className="text-xs text-text-muted">
-            Built with passion for developers.
+            Built with ❤️ by Souvik.
           </p>
         </div>
       </div>
