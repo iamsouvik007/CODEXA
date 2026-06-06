@@ -305,9 +305,9 @@ function parseLesson(filePath, moduleId) {
  * Vite plugin that processes markdown lesson files at build time.
  */
 export default function lessonsPlugin() {
-  const notesDir = fs.existsSync(path.resolve(process.cwd(), 'notes'))
-    ? path.resolve(process.cwd(), 'notes')
-    : path.resolve(process.cwd(), '..', 'notes');
+  const notesDir = fs.existsSync(path.resolve(process.cwd(), 'public', 'notes'))
+    ? path.resolve(process.cwd(), 'public', 'notes')
+    : path.resolve(process.cwd(), '..', 'public', 'notes');
 
   return {
     name: 'vite-plugin-lessons',
