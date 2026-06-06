@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BookOpen, ChevronRight, Zap } from 'lucide-react';
+import { BookOpen, ChevronRight, Zap, Download } from 'lucide-react';
 import { marked } from 'marked';
 
 export default function RevisionMode({ lesson }) {
@@ -59,8 +59,13 @@ export default function RevisionMode({ lesson }) {
       flashcards.push({ title: currentFlashcardTitle, content: currentFlashcardContent.join('\n') });
     }
 
+    const revRaw = revTokens.join('\n');
+    const imgMatch = revRaw.match(/!\[.*?\]\((.*?)\)/);
+    const cheatsheetUrl = imgMatch ? imgMatch[1] : null;
+
     return { 
-      revHTML: revTokens.length > 0 ? marked.parse(revTokens.join('\n')) : '', 
+      revHTML: revTokens.length > 0 ? marked.parse(revRaw) : '', 
+      cheatsheetUrl,
       flashcards 
     };
   }, [lesson.tokens]);
@@ -80,9 +85,24 @@ export default function RevisionMode({ lesson }) {
       {/* Quick Reference Blocks */}
       {revisionContent.revHTML && (
         <div className="rounded-xl border border-border/60 bg-bg-card shadow-lg overflow-hidden">
-          <div className="flex items-center gap-3 border-b border-border/40 bg-bg-elevated/30 p-4 sm:px-6">
-            <Zap className="h-5 w-5 text-accent" />
-            <h2 className="font-heading text-lg font-bold text-text">Quick Reference</h2>
+          <div className="flex items-center justify-between border-b border-border/40 bg-bg-elevated/30 p-4 sm:px-6">
+            <div className="flex items-center gap-3">
+              <Zap className="h-5 w-5 text-accent" />
+              <h2 className="font-heading text-lg font-bold text-text">Quick Reference</h2>
+            </div>
+            {revisionContent.cheatsheetUrl && (
+              <a 
+                href={revisionContent.cheatsheetUrl} 
+                download 
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-2 rounded-lg bg-accent/10 px-3 py-1.5 text-sm font-medium text-accent hover:bg-accent/20 transition-colors"
+              >
+                <Download className="h-4 w-4" />
+                <span className="hidden sm:inline">Download Cheatsheet</span>
+                <span className="sm:hidden">Download</span>
+              </a>
+            )}
           </div>
           <div className="prose prose-sm sm:prose-base prose-codexa max-w-none p-5 sm:p-6" 
             dangerouslySetInnerHTML={{ __html: revisionContent.revHTML }} 

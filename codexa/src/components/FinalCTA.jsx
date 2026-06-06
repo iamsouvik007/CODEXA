@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { ArrowRight, Sparkles } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useScrollReveal, fadeUp, staggerContainer } from '../lib/animations';
 
 export default function FinalCTA() {
@@ -38,13 +39,13 @@ export default function FinalCTA() {
           </p>
 
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <a
-              href="#"
+            <Link
+              to="/learn"
               className="group inline-flex items-center gap-2 rounded-pill bg-accent px-10 py-4 text-base font-medium text-white shadow-card transition-all hover:bg-accent-deep hover:shadow-elevated"
             >
               Start Learning — It&apos;s Free
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
-            </a>
+            </Link>
           </div>
 
           <p className="mt-5 text-sm text-text-muted">
