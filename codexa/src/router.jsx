@@ -8,6 +8,7 @@ import LandingPage from './App';
 // Lazy load learning routes for code splitting
 const LearningHub = lazy(() => import('./pages/LearningHub'));
 const WebDevTrack = lazy(() => import('./pages/WebDevTrack'));
+const Projects = lazy(() => import('./pages/Projects'));
 
 function LoadingFallback() {
   return (
@@ -50,6 +51,14 @@ const router = createBrowserRouter([
         element: (
           <Suspense fallback={<LoadingFallback />}>
             <WebDevTrack />
+          </Suspense>
+        ),
+      },
+      {
+        path: 'projects',
+        element: (
+          <Suspense fallback={<LoadingFallback />}>
+            <Projects />
           </Suspense>
         ),
       },

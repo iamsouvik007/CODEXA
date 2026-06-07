@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
 import {
   BookOpen, Lightbulb, Eye, Gamepad2, HelpCircle, Brain, Bot, Trophy,
-  BookX, Sparkles, Check, ChevronRight
+  BookX, Sparkles, Check, ChevronRight, FolderGit2
 } from 'lucide-react';
 import { SectionLabel, SectionHeading, SectionDescription } from './Section';
 import { fadeUp, staggerContainer } from '../lib/animations';
@@ -86,7 +86,8 @@ const steps = [
     color: 'text-warning',
     bg: 'bg-warning/10',
     border: 'hover:border-warning/50',
-    glow: 'shadow-warning/5'
+    glow: 'shadow-warning/5',
+    project: 'Top Level Project'
   }
 ];
 
@@ -258,6 +259,16 @@ export default function LearningMethod() {
                     <p className="text-[11px] leading-relaxed text-text-muted/80 font-light max-w-[200px] lg:max-w-none pr-8 lg:pr-0">
                       {step.desc}
                     </p>
+                    {step.project && (
+                      <div className={`mt-2.5 inline-flex items-center gap-1.5 rounded-full border px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wider transition-all duration-300 ${
+                        isActive
+                          ? 'border-warning/30 bg-warning/10 text-warning shadow-[0_0_8px_rgba(234,179,8,0.2)]'
+                          : 'border-border/50 bg-bg-elevated/30 text-text-muted/60'
+                      }`}>
+                        <FolderGit2 className="h-2.5 w-2.5 shrink-0" />
+                        {step.project}
+                      </div>
+                    )}
                   </div>
                 </motion.div>
               );

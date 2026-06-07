@@ -84,6 +84,7 @@ export default function Navbar({ onOpenModal }) {
   const navLinks = [
     { label: 'Home', href: '#main-content' },
     { label: 'Learn', href: '/learn' },
+    { label: 'Projects', href: '/projects' },
     { label: 'Playground', href: '#playground', modal: 'playground' },
     { label: 'AI Tutor', href: '#ai-tutor', action: 'ai-tutor' },
   ];
@@ -106,8 +107,8 @@ export default function Navbar({ onOpenModal }) {
       </a>
       <header
         className={`fixed top-0 right-0 left-0 z-50 transition-all duration-300 ${scrolled
-            ? 'border-b border-border bg-bg/80 backdrop-blur-xl'
-            : 'bg-transparent'
+          ? 'border-b border-border bg-bg/80 backdrop-blur-xl'
+          : 'bg-transparent'
           }`}
       >
         <nav className="mx-auto flex h-16 max-w-[1200px] items-center justify-between px-5 sm:px-8" aria-label="Main navigation">

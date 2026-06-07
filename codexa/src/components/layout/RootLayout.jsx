@@ -58,7 +58,7 @@ export default function RootLayout() {
   // Reset scroll position to top on path change, unless navigating to a hash
   useEffect(() => {
     if (location.state?.scrollToHash) return;
-    
+
     if (window.lenis) {
       window.lenis.scrollTo(0, { immediate: true });
     } else {

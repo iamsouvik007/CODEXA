@@ -172,7 +172,7 @@ export default function PracticeWorkspace({ lessonId = '1' }) {
           </div>
 
           {/* Logs scroll screen */}
-          <div className="flex-1 p-5 font-mono text-xs overflow-y-auto space-y-2 select-text min-h-[300px]">
+          <div className="h-[300px] max-h-[300px] p-5 font-mono text-xs overflow-y-auto space-y-2 select-text">
             {logs.length > 0 ? (
               logs.map((log, i) => {
                 const colorMap = {

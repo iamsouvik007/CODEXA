@@ -53,7 +53,8 @@
 @layer base {
   html {
     scroll-behavior: smooth;
-    scroll-padding-top: 80px; /* Offset for fixed navbar */
+    scroll-padding-top: 80px;
+    /* Offset for fixed navbar */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -139,12 +140,15 @@
     left: 6%;
     opacity: 0;
   }
+
   10% {
     opacity: 1;
   }
+
   90% {
     opacity: 1;
   }
+
   100% {
     left: 94%;
     opacity: 0;
@@ -156,12 +160,15 @@
     top: 0%;
     opacity: 0;
   }
+
   10% {
     opacity: 1;
   }
+
   90% {
     opacity: 1;
   }
+
   100% {
     top: 100%;
     opacity: 0;
@@ -170,7 +177,13 @@
 
 /* ─── Prose styles for lesson content ─── */
 .prose-codexa {
-  h1, h2, h3, h4, h5, h6 {
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     color: var(--color-text);
     font-family: var(--font-heading);
     font-weight: 600;
@@ -178,8 +191,14 @@
     margin-bottom: 0.5em;
     letter-spacing: -0.02em;
   }
-  h2 { font-size: 1.25rem; }
-  h3 { font-size: 1.125rem; }
+
+  h2 {
+    font-size: 1.25rem;
+  }
+
+  h3 {
+    font-size: 1.125rem;
+  }
 
   p {
     margin-bottom: 0.75em;
@@ -201,7 +220,8 @@
     text-underline-offset: 2px;
   }
 
-  ul, ol {
+  ul,
+  ol {
     margin: 0.5em 0 1em 1.25em;
   }
 
@@ -210,11 +230,11 @@
     line-height: 1.7;
   }
 
-  ul > li {
+  ul>li {
     list-style-type: disc;
   }
 
-  ol > li {
+  ol>li {
     list-style-type: decimal;
   }
 
@@ -275,54 +295,73 @@
 .hljs {
   color: #abb2bf;
 }
+
 .hljs-keyword,
 .hljs-selector-tag,
 .hljs-doctag,
 .hljs-meta .hljs-keyword {
-  color: #c678dd; /* Purple */
+  color: #c678dd;
+  /* Purple */
   font-weight: bold;
 }
+
 .hljs-title,
 .hljs-title.function_ {
-  color: #61afef; /* Blue */
+  color: #61afef;
+  /* Blue */
 }
+
 .hljs-variable,
 .hljs-property,
 .hljs-attr,
 .hljs-params,
 .hljs-attribute {
-  color: #56b6c2; /* Cyan */
+  color: #56b6c2;
+  /* Cyan */
 }
+
 .hljs-string {
-  color: #98c379; /* Green */
+  color: #98c379;
+  /* Green */
 }
+
 .hljs-number,
 .hljs-literal {
-  color: #d19a66; /* Amber/Orange */
+  color: #d19a66;
+  /* Amber/Orange */
 }
+
 .hljs-class,
 .hljs-title.class_,
 .hljs-built_in,
 .hljs-type {
-  color: #e5c07b; /* Yellow */
+  color: #e5c07b;
+  /* Yellow */
 }
+
 .hljs-comment,
 .hljs-quote {
-  color: #5c6370; /* Muted Gray */
+  color: #5c6370;
+  /* Muted Gray */
   font-style: italic;
 }
+
 .hljs-operator,
 .hljs-punctuation,
 .hljs-subst {
-  color: #ffffff; /* White */
+  color: #ffffff;
+  /* White */
 }
+
 .hljs-regexp {
   color: #fca5a5;
 }
+
 .hljs-addition {
   color: #98c379;
   background: rgba(34, 197, 94, 0.1);
 }
+
 .hljs-deletion {
   color: #fca5a5;
   background: rgba(239, 68, 68, 0.1);
@@ -332,41 +371,101 @@
 /* ─── Card-Specific Color-Coded Prose Contexts ─── */
 .border-orange-500\/15 .prose-codexa,
 .border-orange-500\/25 .prose-codexa {
-  strong { color: var(--color-accent); }
-  code { color: #ff914d; background: rgba(249, 115, 22, 0.07); border-color: rgba(249, 115, 22, 0.2); }
-  ul > li::marker { color: var(--color-accent); }
+  strong {
+    color: var(--color-accent);
+  }
+
+  code {
+    color: #ff914d;
+    background: rgba(249, 115, 22, 0.07);
+    border-color: rgba(249, 115, 22, 0.2);
+  }
+
+  ul>li::marker {
+    color: var(--color-accent);
+  }
 }
 
 .border-red-500\/15 .prose-codexa,
 .border-red-500\/25 .prose-codexa {
-  strong { color: #f87171; }
-  code { color: #f87171; background: rgba(239, 68, 68, 0.08); border-color: rgba(239, 68, 68, 0.2); }
-  ul > li::marker { color: #f87171; }
+  strong {
+    color: #f87171;
+  }
+
+  code {
+    color: #f87171;
+    background: rgba(239, 68, 68, 0.08);
+    border-color: rgba(239, 68, 68, 0.2);
+  }
+
+  ul>li::marker {
+    color: #f87171;
+  }
 }
 
 .border-warning\/20 .prose-codexa {
-  strong { color: var(--color-warning); }
-  code { color: #fef08a; background: rgba(234, 179, 8, 0.08); border-color: rgba(234, 179, 8, 0.2); }
-  ul > li::marker { color: var(--color-warning); }
+  strong {
+    color: var(--color-warning);
+  }
+
+  code {
+    color: #fef08a;
+    background: rgba(234, 179, 8, 0.08);
+    border-color: rgba(234, 179, 8, 0.2);
+  }
+
+  ul>li::marker {
+    color: var(--color-warning);
+  }
 }
 
 .border-purple-500\/25 .prose-codexa {
-  strong { color: #c084fc; }
-  code { color: #c084fc; background: rgba(168, 85, 247, 0.08); border-color: rgba(168, 85, 247, 0.2); }
-  ul > li::marker { color: #c084fc; }
+  strong {
+    color: #c084fc;
+  }
+
+  code {
+    color: #c084fc;
+    background: rgba(168, 85, 247, 0.08);
+    border-color: rgba(168, 85, 247, 0.2);
+  }
+
+  ul>li::marker {
+    color: #c084fc;
+  }
 }
 
 .border-pink-500\/15 .prose-codexa,
 .border-pink-500\/25 .prose-codexa {
-  strong { color: #f472b6; }
-  code { color: #f472b6; background: rgba(236, 72, 153, 0.08); border-color: rgba(236, 72, 153, 0.2); }
-  ul > li::marker { color: #f472b6; }
+  strong {
+    color: #f472b6;
+  }
+
+  code {
+    color: #f472b6;
+    background: rgba(236, 72, 153, 0.08);
+    border-color: rgba(236, 72, 153, 0.2);
+  }
+
+  ul>li::marker {
+    color: #f472b6;
+  }
 }
 
 .border-cyan-500\/25 .prose-codexa {
-  strong { color: #22d3ee; }
-  code { color: #22d3ee; background: rgba(6, 182, 212, 0.08); border-color: rgba(6, 182, 212, 0.2); }
-  ul > li::marker { color: #22d3ee; }
+  strong {
+    color: #22d3ee;
+  }
+
+  code {
+    color: #22d3ee;
+    background: rgba(6, 182, 212, 0.08);
+    border-color: rgba(6, 182, 212, 0.2);
+  }
+
+  ul>li::marker {
+    color: #22d3ee;
+  }
 }
 
 /* ─── Data table styles ─── */
@@ -417,9 +516,21 @@
 
 /* ─── Shake animation for wrong quiz answers ─── */
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  20%, 60% { transform: translateX(-6px); }
-  40%, 80% { transform: translateX(6px); }
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  20%,
+  60% {
+    transform: translateX(-6px);
+  }
+
+  40%,
+  80% {
+    transform: translateX(6px);
+  }
 }
 
 .animate-shake {
@@ -427,8 +538,15 @@
 }
 
 @keyframes cursor-blink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0;
+  }
 }
 
 .animate-cursor-blink {
@@ -440,13 +558,16 @@
   width: 8px;
   height: 8px;
 }
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
   background: var(--color-border);
   border-radius: 4px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-border-strong);
 }
